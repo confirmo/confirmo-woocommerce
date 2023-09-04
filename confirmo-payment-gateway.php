@@ -51,7 +51,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 // This controls the title which the user sees during checkout.
                 $this->title = "Crypto Payment"; // title of the payment method (can be overridden by the user)
                 // This controls the description which the user sees during checkout.
-                $this->description = "Pay with Bitcoin, Lightning, Stablecoins and other Crypto via Confirmo Crypto Gateway.";
+                $this->description = "Pay with Bitcoin, Lightning, Stablecoins and other Crypto via Confirmo Cryptocurrency Payment Gateway.";
 
                 // Supports default credit card form
                 $this->supports = array();
