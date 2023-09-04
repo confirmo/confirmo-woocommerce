@@ -1,7 +1,7 @@
 <?php
 /*
-Plugin Name: Confirmo Crypto Gateway
-Description: Accept most used cryptocurrency in your WooCommerce store with the Confirmo Crypto Gateway as easily as with a bank card.
+Plugin Name: Confirmo Cryptocurrency Payment Gateway
+Description: Accept most used cryptocurrency in your WooCommerce store with the Confirmo Cryptocurrency Payment Gateway  as easily as with a bank card.
 Version: 2.0
 Author: Jakub Slechta
 */
