@@ -1,12 +1,12 @@
 === Confirmo Cryptocurrency Payment Gateway === 
 
-Contributors: jakubslechta
-Tags: Confirmo, Cryptocurrency, Crypto, Crypto Payments, Payment Gateway, Bitcoin, BTC, Ethereum, ETH, Litecoin, LTC, Solana, SOL, Tron, TRX, USDC, USDT, Tether
-Requires at least: 6.0
-Tested up to: 6.3.1
-Stable tag: 2.0
-Requires PHP: 5.2.4
-License: GPLv2 or later
+Contributors: jakubslechta<br>
+Tags: Confirmo, Cryptocurrency, Crypto, Crypto Payments, Payment Gateway, Bitcoin, BTC, Ethereum, ETH, Litecoin, LTC, Solana, SOL, Tron, TRX, USDC, USDT, Tether<br>
+Requires at least: 6.0<br>
+Tested up to: 6.3.1<br>
+Stable tag: 2.0<br>
+Requires PHP: 5.2.4<br>
+License: GPLv2 or later<br>
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Crypto payments made easy with with industry leaders. Confirmo.net
