@@ -217,6 +217,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                 $order = wc_get_order($order_id);
 
+                $order_currency = $order->get_currency();
                 $total_amount = $order->get_total();
 
                 $product_name = '';
@@ -256,7 +257,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         'description' => $product_description
                     ) ,
                     'invoice' => array(
-                        'currencyFrom' => 'CZK',
+                        'currencyFrom' => $order_currency,
                         'amount' => $total_amount
                     ) ,
                     'notificationUrl' => $notify_url,
