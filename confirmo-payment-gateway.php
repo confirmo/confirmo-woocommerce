@@ -449,8 +449,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
         function custom_order_status_thank_you_text($original_text, $order)
         {
-            $confirmo_redirect_url = get_post_meta($order->get_id() , '_confirmo_redirect_url', true);
             if (!$order) return $original_text; // Return the original text if there's no order
+            $confirmo_redirect_url = get_post_meta($order->get_id() , '_confirmo_redirect_url', true);
             $status = $order->get_status();
             $custom_text = '';
 
