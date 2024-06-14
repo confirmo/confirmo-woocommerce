@@ -1,0 +1,443 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Confirmo Cryptocurrency Payment Gateway\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-30 16:06+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.6.9; wp-6.5.3\n"
+"X-Domain: confirmo-payment-gateway"
+
+#: confirmo-payment-gateway.php:356
+msgid "A new invoice with payment instructions was created."
+msgstr ""
+
+#: confirmo-payment-gateway.php:365
+msgid ""
+"A payment has not been announced to the network within its active period, or "
+"the amount sent is lower than was requested."
+msgstr ""
+
+#. Description of the plugin
+msgid ""
+"Accept most used cryptocurrency in your WooCommerce store with the Confirmo "
+"Cryptocurrency Payment Gateway as easily as with a bank card."
+msgstr ""
+
+#: confirmo-payment-gateway.php:549
+msgid "Amount"
+msgstr ""
+
+#: confirmo-payment-gateway.php:725
+msgid "amount"
+msgstr ""
+
+#: confirmo-payment-gateway.php:139
+msgid "API Key"
+msgstr ""
+
+#: confirmo-payment-gateway.php:189
+msgid "API Key must be 64 characters long."
+msgstr ""
+
+#: confirmo-payment-gateway.php:193
+msgid "API Key must only contain alphanumeric characters."
+msgstr ""
+
+#: confirmo-payment-gateway.php:607 confirmo-payment-gateway.php:651
+msgid "API Response"
+msgstr ""
+
+#: confirmo-payment-gateway.php:305
+msgid "Awaiting Confirmo payment."
+msgstr ""
+
+#: confirmo-payment-gateway.php:567
+msgid "Border Radius (px)"
+msgstr ""
+
+#: confirmo-payment-gateway.php:728
+msgid "border_radius"
+msgstr ""
+
+#: confirmo-payment-gateway.php:555
+msgid "Button Color"
+msgstr ""
+
+#: confirmo-payment-gateway.php:726
+msgid "button_color"
+msgstr ""
+
+#: confirmo-payment-gateway.php:149
+msgid "Callback Password"
+msgstr ""
+
+#: confirmo-payment-gateway.php:201
+msgid "Callback Password must be 16 characters long."
+msgstr ""
+
+#: confirmo-payment-gateway.php:205
+msgid "Callback Password must only contain alphanumeric characters."
+msgstr ""
+
+#: confirmo-payment-gateway.php:485 confirmo-payment-gateway.php:693
+msgid "Click Download, and then activate the plugin."
+msgstr ""
+
+#: confirmo-payment-gateway.php:368
+msgid "Confirming failed."
+msgstr ""
+
+#: confirmo-payment-gateway.php:102
+msgid "Confirmo"
+msgstr ""
+
+#. Name of the plugin
+#: confirmo-payment-gateway.php:475
+msgid "Confirmo Cryptocurrency Payment Gateway"
+msgstr ""
+
+#: confirmo-payment-gateway.php:683
+msgid "Confirmo Cryptocurrency Payment Gateway Help"
+msgstr ""
+
+#: confirmo-payment-gateway.php:602
+msgid "Confirmo Debug Information"
+msgstr ""
+
+#: confirmo-payment-gateway.php:464 confirmo-payment-gateway.php:465
+msgid "Confirmo Help"
+msgstr ""
+
+#: confirmo-payment-gateway.php:435 confirmo-payment-gateway.php:436
+msgid "Confirmo Payment"
+msgstr ""
+
+#: confirmo-payment-gateway.php:387 confirmo-payment-gateway.php:397
+msgid "Confirmo Payment URL:"
+msgstr ""
+
+#. Author of the plugin
+msgid "Confirmo.net"
+msgstr ""
+
+#: confirmo-payment-gateway.php:504 confirmo-payment-gateway.php:712
+msgid "Connecting the plugin to your Confirmo account:"
+msgstr ""
+
+#: confirmo-payment-gateway.php:499 confirmo-payment-gateway.php:707
+msgid ""
+"Copy the extracted contents into your WordPress installation under wp-"
+"content/plugins."
+msgstr ""
+
+#: confirmo-payment-gateway.php:505 confirmo-payment-gateway.php:713
+msgid ""
+"Create an account at <a href=\"https://confirmo.net\">Confirmo.net</a> and "
+"then go to Settings – API Keys – Create API key. You will be required to "
+"complete an e-mail verification, after which you will receive the API key. "
+"Once you have it, go to WooCommerce – Settings – Payments, and enable "
+"Confirmo as a payment method. Paste the API key into the respective field."
+msgstr ""
+
+#: confirmo-payment-gateway.php:105
+msgid "Crypto Payment"
+msgstr ""
+
+#: confirmo-payment-gateway.php:103
+msgid "Crypto payments made easy with industry leaders."
+msgstr ""
+
+#: confirmo-payment-gateway.php:476 confirmo-payment-gateway.php:684
+msgid "Crypto payments made easy with industry leaders. Confirmo.net"
+msgstr ""
+
+#: confirmo-payment-gateway.php:539
+msgid "Currency"
+msgstr ""
+
+#: confirmo-payment-gateway.php:724
+msgid "currency"
+msgstr ""
+
+#: confirmo-payment-gateway.php:38 confirmo-payment-gateway.php:788
+msgid "Custom Payment"
+msgstr ""
+
+#: confirmo-payment-gateway.php:624
+msgid "Delete all logs"
+msgstr ""
+
+#: confirmo-payment-gateway.php:491 confirmo-payment-gateway.php:498
+#: confirmo-payment-gateway.php:699 confirmo-payment-gateway.php:706
+msgid "Download and extract the .zip file."
+msgstr ""
+
+#: confirmo-payment-gateway.php:620
+msgid "Download Debug Logs"
+msgstr ""
+
+#: confirmo-payment-gateway.php:135
+msgid "Enable Confirmo Payment"
+msgstr ""
+
+#: confirmo-payment-gateway.php:478 confirmo-payment-gateway.php:686
+msgid "Enable the future of payments today"
+msgstr ""
+
+#: confirmo-payment-gateway.php:133
+msgid "Enable/Disable"
+msgstr ""
+
+#: confirmo-payment-gateway.php:141
+msgid "Enter your Confirmo API Key here"
+msgstr ""
+
+#: confirmo-payment-gateway.php:151
+msgid "Enter your Confirmo Callback Password"
+msgstr ""
+
+#: confirmo-payment-gateway.php:805
+msgid "Error:"
+msgstr ""
+
+#: confirmo-payment-gateway.php:29
+msgid "Error: API key is missing."
+msgstr ""
+
+#: confirmo-payment-gateway.php:71 confirmo-payment-gateway.php:815
+msgid "Error: Payment URL not received."
+msgstr ""
+
+#: confirmo-payment-gateway.php:509 confirmo-payment-gateway.php:717
+msgid ""
+"Finally, choose your desired Settlement currency. Make sure to save your "
+"changes by clicking the button at the bottom. When the plugin is activated, "
+"Confirmo will appear as a payment option in your website's WooCommerce "
+"checkout. <b>Congratulations, you can now start receiving cryptocurrency "
+"payments!</b>"
+msgstr ""
+
+#: confirmo-payment-gateway.php:496 confirmo-payment-gateway.php:704
+msgid "FTP or File Manager:"
+msgstr ""
+
+#: confirmo-payment-gateway.php:574
+msgid "Generate Shortcode"
+msgstr ""
+
+#: confirmo-payment-gateway.php:585
+msgid "Generated Shortcode:"
+msgstr ""
+
+#: confirmo-payment-gateway.php:719
+msgid "Generating a payment button using shortcode"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://confirmo.net"
+msgstr ""
+
+#: confirmo-payment-gateway.php:603
+msgid ""
+"If you encounter any issues, please download these debug logs and send them "
+"to plugin support."
+msgstr ""
+
+#: confirmo-payment-gateway.php:722
+msgid "In this example:"
+msgstr ""
+
+#: confirmo-payment-gateway.php:492 confirmo-payment-gateway.php:700
+msgid ""
+"In your WordPress dashboard, go to Plugins – Add New – Upload Plugin, and "
+"upload the extracted folder. Activate the plugin."
+msgstr ""
+
+#: confirmo-payment-gateway.php:484 confirmo-payment-gateway.php:692
+msgid ""
+"In your WordPress dashboard, go to Plugins – Add New, and search for "
+"'Confirmo Cryptocurrency Payment Gateway'."
+msgstr ""
+
+#: confirmo-payment-gateway.php:500 confirmo-payment-gateway.php:708
+msgid ""
+"In your WordPress dashboard, go to Plugins – Installed plugins – Confirmo "
+"Cryptocurrency Payment Gateway. Activate the plugin."
+msgstr ""
+
+#: confirmo-payment-gateway.php:486 confirmo-payment-gateway.php:493
+#: confirmo-payment-gateway.php:501 confirmo-payment-gateway.php:694
+#: confirmo-payment-gateway.php:701 confirmo-payment-gateway.php:709
+msgid ""
+"In your WordPress dashboard, go to WooCommerce – Settings – Payments. Click "
+"Confirmo. You will be asked to configure the plugin with information "
+"generated in your Confirmo account to connect them."
+msgstr ""
+
+#: confirmo-payment-gateway.php:481 confirmo-payment-gateway.php:689
+msgid "Installing the plugin"
+msgstr ""
+
+#: confirmo-payment-gateway.php:181
+msgid "Invalid settlement currency selected."
+msgstr ""
+
+#: confirmo-payment-gateway.php:128 confirmo-payment-gateway.php:529
+msgid "Keep it in kind (no conversion)"
+msgstr ""
+
+#: confirmo-payment-gateway.php:455 confirmo-payment-gateway.php:456
+msgid "Logs"
+msgstr ""
+
+#: confirmo-payment-gateway.php:627
+msgid "No debug logs available for the last day."
+msgstr ""
+
+#: confirmo-payment-gateway.php:607 confirmo-payment-gateway.php:651
+msgid "Order ID"
+msgstr ""
+
+#: confirmo-payment-gateway.php:758
+#, php-format
+msgid "Pay %s %s"
+msgstr ""
+
+#: confirmo-payment-gateway.php:106
+msgid ""
+"Pay with Bitcoin, Lightning, Stablecoins and other Crypto via Confirmo "
+"Cryptocurrency Payment Gateway."
+msgstr ""
+
+#: confirmo-payment-gateway.php:446 confirmo-payment-gateway.php:447
+#: confirmo-payment-gateway.php:535
+msgid "Payment Button Generator"
+msgstr ""
+
+#: confirmo-payment-gateway.php:282
+msgid "Payment error: "
+msgstr ""
+
+#: confirmo-payment-gateway.php:299
+msgid "Payment error: The Confirmo API response did not contain a url."
+msgstr ""
+
+#: confirmo-payment-gateway.php:38 confirmo-payment-gateway.php:788
+msgid "Payment via Confirmo Button"
+msgstr ""
+
+#: confirmo-payment-gateway.php:511 confirmo-payment-gateway.php:731
+msgid ""
+"Read more at <a href=\"https://confirmo.net\">Confirmo.net</a>. Should you "
+"encounter any difficulties, <a href=\"mailto:support@confirmo.net\">contact "
+"us</a> at support@confirmo.net"
+msgstr ""
+
+#: confirmo-payment-gateway.php:159
+msgid "Settlement Currency"
+msgstr ""
+
+#: confirmo-payment-gateway.php:162
+msgid ""
+"Settlement currency refers to the currency in which a crypto payment is "
+"finalized or settled."
+msgstr ""
+
+#: confirmo-payment-gateway.php:479 confirmo-payment-gateway.php:687
+msgid ""
+"Start accepting cryptocurrency payments with Confirmo, one of the fastest "
+"growing companies in crypto payments! We provide a payment gateway used by "
+"Forex brokers, prop trading companies, e-commerce merchants, and luxury "
+"businesses worldwide. Our clients include FTMO, My Forex Funds, Alza and "
+"many more. All rely on our easily integrated solutions, low fees, and top-"
+"class customer support."
+msgstr ""
+
+#: confirmo-payment-gateway.php:561
+msgid "Text Color"
+msgstr ""
+
+#: confirmo-payment-gateway.php:727
+msgid "text_color"
+msgstr ""
+
+#: confirmo-payment-gateway.php:725
+msgid "The amount to be paid"
+msgstr ""
+
+#: confirmo-payment-gateway.php:728
+msgid "The button border radius (in pixels)"
+msgstr ""
+
+#: confirmo-payment-gateway.php:726
+msgid "The button color (in hex code format)"
+msgstr ""
+
+#: confirmo-payment-gateway.php:727
+msgid "The button text color (in hex code format)"
+msgstr ""
+
+#: confirmo-payment-gateway.php:724
+msgid "The currency you want to accept (e.g., BTC)"
+msgstr ""
+
+#: confirmo-payment-gateway.php:359
+msgid "The payment was received, the amount is correct or higher."
+msgstr ""
+
+#: confirmo-payment-gateway.php:362
+msgid "The required amount has been confirmed."
+msgstr ""
+
+#: confirmo-payment-gateway.php:607 confirmo-payment-gateway.php:651
+msgid "Time"
+msgstr ""
+
+#: confirmo-payment-gateway.php:507 confirmo-payment-gateway.php:715
+msgid ""
+"To generate a callback password, return to the Confirmo dashboard and go to "
+"Settings – Callback password. You will be prompted to complete a second e-"
+"mail verification and then provided with the callback password. Again, paste "
+"it into the respective field in WooCommerce – Settings – Payments. Callback "
+"passwords help increase the security of the API integration. Never share "
+"your API key or callback password with anyone!"
+msgstr ""
+
+#: confirmo-payment-gateway.php:720
+msgid "To generate a payment button, use the following shortcode:"
+msgstr ""
+
+#: confirmo-payment-gateway.php:489 confirmo-payment-gateway.php:697
+msgid "Upload:"
+msgstr ""
+
+#: confirmo-payment-gateway.php:482 confirmo-payment-gateway.php:690
+msgid "WordPress plugins:"
+msgstr ""
+
+#: confirmo-payment-gateway.php:411 confirmo-payment-gateway.php:418
+msgid "Your Confirmo Payment URL:"
+msgstr ""
+
+#: confirmo-payment-gateway.php:413
+msgid "Your order is currently on hold, awaiting your payment."
+msgstr ""
+
+#: confirmo-payment-gateway.php:411
+msgid ""
+"Your order will be completed once the payment receives sufficient "
+"confirmations."
+msgstr ""
+
+#: confirmo-payment-gateway.php:418 confirmo-payment-gateway.php:420
+msgid "Your payment has been completed."
+msgstr ""
