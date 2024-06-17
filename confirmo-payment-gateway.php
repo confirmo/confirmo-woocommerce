@@ -10,12 +10,12 @@ Domain Path: /languages
 */
 
 // Translations loading
-if (!defined('ABSPATH')) exit;
+// if (!defined('ABSPATH')) exit;
 function confirmo_sanitize_array($array)
 {
     foreach ($array as $key => $value) {
         if (is_array($value)) {
-            $array[$key] = sanitizeArray($value);
+            $array[$key] = confirmo_sanitize_array($value);
         } else {
             $array[$key] = sanitize_text_field($value);
         }
