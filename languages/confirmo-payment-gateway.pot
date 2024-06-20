@@ -20,6 +20,13 @@ msgstr ""
 msgid "A new invoice with payment instructions was created."
 msgstr ""
 
+msgid "Settings have been moved. Please configure the gateway"
+msgstr ""
+
+msgid "here"
+msgstr ""
+
+
 #: confirmo-payment-gateway.php:365
 msgid ""
 "A payment has not been announced to the network within its active period, or "
@@ -113,6 +120,37 @@ msgstr ""
 msgid "Confirmo Debug Information"
 msgstr ""
 
+
+#: confirmo-payment-gateway.php:691
+msgid "Adjust the settings for Confirmo payment gateway."
+msgstr ""
+
+#: confirmo-payment-gateway.php:659
+msgid "API Key must be exactly 64 alphanumeric characters"
+msgstr ""
+
+  #: confirmo-payment-gateway.php:670
+msgid "Callback Password must be 16 alphanumeric characters"
+msgstr ""
+
+#: confirmo-payment-gateway.php:603
+msgid "Main Settings"
+msgstr ""
+
+
+#: confirmo-payment-gateway.php:573 confirmo-payment-gateway.php:574
+msgid "Payment Gate Config"
+msgstr ""
+
+#: confirmo-payment-gateway.php:871
+msgid "Redirect URL"
+msgstr ""
+#: confirmo-payment-gateway.php:590
+msgid "Save Settings"
+msgstr ""
+#: confirmo-payment-gateway.php:29
+msgid "Settings"
+msgstr ""
 #: confirmo-payment-gateway.php:464 confirmo-payment-gateway.php:465
 msgid "Confirmo Help"
 msgstr ""
@@ -292,7 +330,7 @@ msgid "Invalid settlement currency selected."
 msgstr ""
 
 #: confirmo-payment-gateway.php:128 confirmo-payment-gateway.php:529
-msgid "Keep it in kind (no conversion)"
+msgid "No conversion (The currency stays as it is)"
 msgstr ""
 
 #: confirmo-payment-gateway.php:455 confirmo-payment-gateway.php:456
