@@ -5,12 +5,12 @@ Description: Accept most used cryptocurrency in your WooCommerce store with the 
 Version: 2.1.1
 Author: Confirmo.net
 Author URI: https://confirmo.net
-Text Domain: confirmo-payment-gateway
+Text Domain: confirmo-woo-payments
 Domain Path: /languages
 */
 
 // Translations loading
-// if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) exit;
 function confirmo_sanitize_array($array)
 {
     foreach ($array as $key => $value) {
@@ -32,8 +32,6 @@ function confirmo_add_settings_link($links)
 }
 
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'confirmo_add_settings_link');
-
-
 
 
 function confirmo_load_textdomain()
@@ -106,7 +104,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 'Content-Type' => 'application/json',
                 'X-Payment-Module' => 'WooCommerce'
             ),
-            'body' => json_encode($data)
+            'body' => wp_json_encode($data)
         ));
 
         $response_body = wp_remote_retrieve_body($response);
@@ -115,10 +113,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         $order_id = 'custom-button-payment'; // Tady je potřeba použít skutečné ID objednávky, pokud je dostupné
 
         error_log("Order ID before logging: " . $order_id);
-        error_log("API Response before logging: " . json_encode($response_data));
+        error_log("API Response before logging: " . wp_json_encode($response_data));
 
         if ($order_id && $response_data) {
-            confirmo_add_debug_log($order_id, json_encode($response_data));
+            confirmo_add_debug_log($order_id, wp_json_encode($response_data));
         } else {
             error_log("Missing order_id or response_data");
         }
@@ -163,7 +161,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             {
                 $this->id = "confirmo";
                 $this->method_title = __("Confirmo", 'confirmo-payment-gateway');
-                $this->method_description = __("Settings have been moved. Please configure the gateway", 'confirmo-payment-gateway'). "<a href='" . admin_url('admin.php?page=confirmo-payment-gate-config') . "'>".__("here", 'confirmo-payment-gateway')."</a>.";
+                $this->method_description = __("Settings have been moved. Please configure the gateway", 'confirmo-payment-gateway') . "<a href='" . admin_url('admin.php?page=confirmo-payment-gate-config') . "'>" . __("here", 'confirmo-payment-gateway') . "</a>.";
                 $this->api_key = $this->get_option('api_key');
                 $this->settlement_currency = $this->get_option('settlement_currency');
                 $this->callback_password = $this->get_option('callback_password');
@@ -180,7 +178,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $screen = get_current_screen();
                 if ($screen->id === 'woocommerce_page_wc-settings' && isset($_GET['section']) && $_GET['section'] === $this->id) {
                     echo '<div class="notice notice-info is-dismissible">';
-                    echo '<p>' . sprintf(__("Settings have been moved. Please configure the gateway", 'confirmo-payment-gateway'). "<a href='" . admin_url('admin.php?page=confirmo-payment-gate-config') . "'>".__("here", 'confirmo-payment-gateway')."</a>.", 'https://example.com/custom-settings') . '</p>';
+                    echo '<p>' . sprintf(__("Settings have been moved. Please configure the gateway", 'confirmo-payment-gateway') . "<a href='" . admin_url('admin.php?page=confirmo-payment-gate-config') . "'>" . __("here", 'confirmo-payment-gateway') . "</a>.", 'https://example.com/custom-settings') . '</p>';
                     echo '</div>';
                 }
             }
@@ -195,7 +193,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     'HUF' => 'HUF',
                     'PLN' => 'PLN',
                     'USD' => 'USD',
-                    '' => __('No conversion (The currency stays as it is)', 'confirmo-payment-gateway'),
+                    '' => __('No conversion (the currency stays as it is)', 'confirmo-payment-gateway'),
                 );
 
                 $this->form_fields = array(
@@ -283,6 +281,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
             public function process_admin_options()
             {
+                if (!wp_verify_nonce($_POST["confirmo-payment-gate-config"], "confirmo-config-nonce")) {
+                    wp_die("Bad nonce.");
+                }
                 try {
                     $api_key = $this->confirmo_validate_and_sanitize_api_key($_POST['woocommerce_confirmo_api_key']);
                     $_POST['woocommerce_confirmo_api_key'] = $api_key;
@@ -347,7 +348,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                 $response = wp_remote_post($url, array(
                     'headers' => $headers,
-                    'body' => json_encode($body),
+                    'body' => wp_json_encode($body),
                     'method' => 'POST',
                     'data_format' => 'body'
                 ));
@@ -362,7 +363,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $response_data = json_decode($response_body, true);
 
                 error_log("Order ID before logging: " . $order_id);
-                error_log("API Response before logging: " . json_encode($response_data));
+                error_log("API Response before logging: " . wp_json_encode($response_data));
 
 
                 if (!isset($response_data['url'])) {
@@ -377,7 +378,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $woocommerce->cart->empty_cart();
 
                 if ($order_id && $response_data) {
-                    confirmo_add_debug_log($order_id, json_encode($response_data), $confirmo_redirect_url);
+                    confirmo_add_debug_log($order_id, wp_json_encode($response_data), $confirmo_redirect_url);
                 } else {
                     error_log("Missing order_id or response_data");
                 }
@@ -472,7 +473,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             if ($email->id == 'new_order' || $email->id == 'customer_on_hold_order') {
                 $confirmo_redirect_url = get_post_meta($order->get_id(), '_confirmo_redirect_url', true);
                 if ($confirmo_redirect_url) {
-                    echo $plain_text ? __('Confirmo Payment URL:', 'confirmo-payment-gateway') . " $confirmo_redirect_url\n" : "<p><strong>" . __('Confirmo Payment URL:', 'confirmo-payment-gateway') . "</strong> <a href='$confirmo_redirect_url'>$confirmo_redirect_url</a></p>";
+                    echo esc_html($plain_text ? __('Confirmo Payment URL:', 'confirmo-payment-gateway') . " $confirmo_redirect_url\n" : "<p><strong>" . __('Confirmo Payment URL:', 'confirmo-payment-gateway') . "</strong> <a href='$confirmo_redirect_url'>$confirmo_redirect_url</a></p>");
                 }
             }
         }
@@ -484,7 +485,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             $confirmo_redirect_url = get_post_meta($order->get_id(), '_confirmo_redirect_url', true);
 
             if ($confirmo_redirect_url) {
-                echo '<p><strong>' . __('Confirmo Payment URL:', 'confirmo-payment-gateway') . '</strong> <a href="' . $confirmo_redirect_url . '" target="_blank">' . $confirmo_redirect_url . '</a></p>';
+                echo esc_html('<p><strong>' . __('Confirmo Payment URL:', 'confirmo-payment-gateway') . '</strong> <a href="' . $confirmo_redirect_url . '" target="_blank">' . $confirmo_redirect_url . '</a></p>');
             }
         }
 
@@ -586,6 +587,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
                 <form method="post" action="options.php">
                     <?php
+                    wp_nonce_field('confirmo-payment-gate-config', 'confirmo_config_nonce');
                     settings_fields('confirmo-payment-gate-config');
                     do_settings_sections('confirmo-payment-gate-config');
                     submit_button(__('Save Settings', 'confirmo-payment-gateway'));
@@ -696,21 +698,21 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         {
             $options = get_option('confirmo_gate_config_options');
             $checked = isset($options['enabled']) && $options['enabled'] ? 'checked' : '';
-            echo '<input type="checkbox" id="enabled" name="confirmo_gate_config_options[enabled]" ' . $checked . '>';
+            echo esc_html('<input type="checkbox" id="enabled" name="confirmo_gate_config_options[enabled]" ' . $checked . '>');
         }
 
         function confirmo_gate_config_api_key_callback()
         {
             $options = get_option('confirmo_gate_config_options');
             $value = isset($options['api_key']) ? esc_attr($options['api_key']) : '';
-            echo '<input type="text" id="api_key" name="confirmo_gate_config_options[api_key]" value="' . $value . '" size="70" maxlength="64" required>';
+            echo esc_html('<input type="text" id="api_key" name="confirmo_gate_config_options[api_key]" value="' . $value . '" size="70" maxlength="64" required>');
         }
 
         function confirmo_gate_config_callback_password_callback()
         {
             $options = get_option('confirmo_gate_config_options');
             $value = isset($options['callback_password']) ? esc_attr($options['callback_password']) : '';
-            echo '<input type="text" id="callback_password" name="confirmo_gate_config_options[callback_password]" value="' . $value . '" required>';
+            echo esc_html('<input type="text" id="callback_password" name="confirmo_gate_config_options[callback_password]" value="' . $value . '" required>');
         }
 
         function confirmo_gate_config_settlement_currency_callback()
@@ -721,7 +723,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             echo '<select id="settlement_currency" name="confirmo_gate_config_options[settlement_currency]">';
             foreach ($settlement_currency_options as $key => $label) {
                 $selected = ($current_value === $key) ? 'selected' : '';
-                echo '<option value="' . esc_attr($key) . '" ' . $selected . '>' . esc_html($label) . '</option>';
+                echo esc_html('<option value="' . esc_attr($key) . '" ' . $selected . '>' . esc_html($label) . '</option>');
             }
             echo '</select>';
         }
@@ -797,6 +799,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             <div class="wrap">
                 <h1><?php _e('Payment Button Generator', 'confirmo-payment-gateway'); ?></h1>
                 <form method="post" action="">
+                    <?php wp_nonce_field('confirmo_set_style', 'confirmo_set_style_nonce'); ?>
                     <table class="form-table">
                         <tr valign="top">
                             <th scope="row"><?php _e('Currency', 'confirmo-payment-gateway'); ?></th>
@@ -839,7 +842,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     </p>
                 </form>
                 <?php
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                if ($_SERVER['REQUEST_METHOD'] == 'POST' && wp_verify_nonce($_POST["confirmo_set_style_nonce"], "confirmo_set_style")) {
                     $currency = sanitize_text_field($_POST['confirmo_currency']);
                     $amount = sanitize_text_field($_POST['confirmo_amount']);
                     $button_color = sanitize_hex_color($_POST['confirmo_button_color']);
@@ -1096,7 +1099,7 @@ function confirmo_custom_payment_template_redirect()
                 'Content-Type' => 'application/json',
                 'X-Payment-Module' => 'WooCommerce'
             ),
-            'body' => json_encode($data)
+            'body' => wp_json_encode($data)
         ));
 
         if (is_wp_error($response)) {
