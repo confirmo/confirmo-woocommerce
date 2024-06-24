@@ -698,21 +698,21 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         {
             $options = get_option('confirmo_gate_config_options');
             $checked = isset($options['enabled']) && $options['enabled'] ? 'checked' : '';
-            echo esc_html('<input type="checkbox" id="enabled" name="confirmo_gate_config_options[enabled]" ' . $checked . '>');
+            echo ('<input type="checkbox" id="enabled" name="confirmo_gate_config_options[enabled]" ' . $checked . '>');
         }
 
         function confirmo_gate_config_api_key_callback()
         {
             $options = get_option('confirmo_gate_config_options');
             $value = isset($options['api_key']) ? esc_attr($options['api_key']) : '';
-            echo esc_html('<input type="text" id="api_key" name="confirmo_gate_config_options[api_key]" value="' . $value . '" size="70" maxlength="64" required>');
+            echo ('<input type="text" id="api_key" name="confirmo_gate_config_options[api_key]" value="' . $value . '" size="70" maxlength="64" required>');
         }
 
         function confirmo_gate_config_callback_password_callback()
         {
             $options = get_option('confirmo_gate_config_options');
             $value = isset($options['callback_password']) ? esc_attr($options['callback_password']) : '';
-            echo esc_html('<input type="text" id="callback_password" name="confirmo_gate_config_options[callback_password]" value="' . $value . '" required>');
+            echo ('<input type="text" id="callback_password" name="confirmo_gate_config_options[callback_password]" value="' . $value . '" required>');
         }
 
         function confirmo_gate_config_settlement_currency_callback()
@@ -723,7 +723,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             echo '<select id="settlement_currency" name="confirmo_gate_config_options[settlement_currency]">';
             foreach ($settlement_currency_options as $key => $label) {
                 $selected = ($current_value === $key) ? 'selected' : '';
-                echo esc_html('<option value="' . esc_attr($key) . '" ' . $selected . '>' . esc_html($label) . '</option>');
+                echo ('<option value="' . esc_attr($key) . '" ' . $selected . '>' . esc_html($label) . '</option>');
             }
             echo '</select>';
         }
