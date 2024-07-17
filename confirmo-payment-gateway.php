@@ -2,12 +2,47 @@
 /*
 Plugin Name: Confirmo Cryptocurrency Payment Gateway
 Description: Accept most used cryptocurrency in your WooCommerce store with the Confirmo Cryptocurrency Payment Gateway as easily as with a bank card.
-Version: 2.2.3
+Version: 2.2.4
 Author: Confirmo.net
 Author URI: https://confirmo.net
 Text Domain: confirmo-payment-gateway
 Domain Path: /languages
 */
+
+// Compatibility with WooCommerce Blocks
+function declare_cart_checkout_blocks_compatibility()
+{
+    // Check if the required class exists
+    if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+        // Declare compatibility for 'cart_checkout_blocks'
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+    }
+}
+
+// Hook the custom function to the 'before_woocommerce_init' action
+add_action('before_woocommerce_init', 'declare_cart_checkout_blocks_compatibility');
+
+// Hook the custom function to the 'woocommerce_blocks_loaded' action
+add_action('woocommerce_blocks_loaded', 'confirmo_register_block_payment_method_type');
+
+function confirmo_register_block_payment_method_type()
+{
+    // Check if the required class exists
+    if (!class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+        return;
+    }
+    // Include the custom Blocks Checkout class
+    require_once plugin_dir_path(__FILE__) . 'class-confirmo-blocks.php';
+    // Hook the registration function to the 'woocommerce_blocks_payment_method_type_registration' action
+    add_action(
+        'woocommerce_blocks_payment_method_type_registration',
+        function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
+            // Register an instance of Confirmo_Blocks
+            $payment_method_registry->register(new Confirmo_Blocks);
+        }
+    );
+}
+
 
 // Translations loading
 if (!defined('ABSPATH')) exit;
@@ -110,7 +145,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         $response_body = wp_remote_retrieve_body($response);
         $response_data = json_decode($response_body, true);
 
-        $order_id = 'custom-button-payment'; // Tady je potřeba použít skutečné ID objednávky, pokud je dostupné
+        $order_id = 'custom-button-payment'; // Here you need to use the actual order ID, if available
 
         error_log("Order ID before logging: " . $order_id);
         error_log("API Response before logging: " . wp_json_encode($response_data));
@@ -168,7 +203,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $this->title = __("Confirmo", 'confirmo-payment-gateway');
                 // If needed, other initializations can be done here.
                 // Adding custom admin notices
-//                add_action('admin_notices', array($this, 'show_custom_admin_notice'));
+                // add_action('admin_notices', array($this, 'show_custom_admin_notice'));
             }
 
             public function confirmo_show_custom_admin_notice()
@@ -333,10 +368,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                 $api_key = $this->get_option('api_key');
                 $url = 'https://confirmo.net/api/v3/invoices';
-// 				This is currently broken, the nice url doesnt work..
-//                 $notify_url = home_url('confirmo-notification');
-//              A quick and dirty fix is just setting the homeurl to a the literal index.php?...
-       			$notify_url = home_url("index.php?confirmo-notification=1"); 
+// 				Nice url doesnt work..
+//               $notify_url = home_url('confirmo-notification');
+
+                $notify_url = home_url("index.php?confirmo-notification=1");
                 $return_url = $order->get_checkout_order_received_url();
                 $settlement_currency = $this->get_option('settlement_currency');
 
@@ -659,6 +694,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 update_option('woocommerce_' . $gateway_id . '_settings', $options);
             }
         }
+        function confirmo_get_wc_option($gateway_id, $option_key)
+        {
+            $options = get_option('woocommerce_' . $gateway_id . '_settings');
+            if (is_array($options) && isset($options[$option_key])) {
+                return $options[$option_key];
+            }
+        }
 
         function confirmo_gate_config_options_validate($input)
         {
@@ -694,14 +736,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             }
 
             if (isset($input['settlement_currency'])) {
-                $settlement_currency = sanitize_text_field($input['settlement_currency']);
+                $settlement_currency = $input['settlement_currency']; //This is a number, 0-8..
                 $allowed_currencies = ['BTC', 'CZK', 'EUR', 'GBP', 'HUF', 'PLN', 'USD', ''];
-                if (in_array($settlement_currency, $allowed_currencies)) {
-                    $new_input['settlement_currency'] = $settlement_currency;
-                    confirmo_set_wc_option("confirmo", "settlement_currency", $new_input['settlement_currency']);
-
+                if ($allowed_currencies[$settlement_currency]) {
+                    confirmo_set_wc_option("confirmo", "settlement_currency", $allowed_currencies[$settlement_currency]);
+                    $new_input['settlement_currency'] = $allowed_currencies[$settlement_currency];
                 } else {
-                    $new_input['settlement_currency'] = isset($settings['settlement_currency']) ? $settings['settlement_currency'] : '';
+                    $new_input['settlement_currency'] = $settings['settlement_currency'] ?? '';
                     add_settings_error('settlement_currency', 'settlement_currency_error', __('Invalid settlement currency selected.', 'confirmo-payment-gateway'), 'error');
                 }
             }
@@ -738,11 +779,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         function confirmo_gate_config_settlement_currency_callback()
         {
             $options = get_option('confirmo_gate_config_options');
-            $current_value = isset($options['settlement_currency']) ? $options['settlement_currency'] : '';
+            $current_value = $options['settlement_currency'] ?? 'test';
             $settlement_currency_options = ['BTC', 'CZK', 'EUR', 'GBP', 'HUF', 'PLN', 'USD', ''];
             echo '<select id="settlement_currency" name="confirmo_gate_config_options[settlement_currency]">';
             foreach ($settlement_currency_options as $key => $label) {
-                $selected = ($current_value === $key) ? 'selected' : '';
+                $selected = ($settlement_currency_options[$key] == $current_value) ? 'selected' : '';
                 echo('<option value="' . esc_attr($key) . '" ' . esc_attr($selected) . '>' . esc_html($label) . '</option>');
             }
             echo '</select>';
@@ -797,8 +838,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
         function confirmo_get_currency_options()
         {
-            $gateway = new WC_Confirmo_Gateway();
-            return $gateway->get_option('settlement_currency');
+            return confirmo_get_wc_option("confirmo","settlement_currency");
         }
 
         function confirmo_payment_generator_page_content()
@@ -1088,6 +1128,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
     add_action('plugins_loaded', 'confirmo_woocommerce_init', 0);
 }
+
+
 function confirmo_payment_shortcode($atts)
 {
     $atts = shortcode_atts(array(
@@ -1194,5 +1236,6 @@ function confirmo_custom_payment_template_redirect()
 }
 
 add_action('template_redirect', 'confirmo_custom_payment_template_redirect');
+
 
 ?>
