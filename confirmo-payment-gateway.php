@@ -2,7 +2,7 @@
 /*
 Plugin Name: Confirmo Cryptocurrency Payment Gateway
 Description: Accept most used cryptocurrency in your WooCommerce store with the Confirmo Cryptocurrency Payment Gateway as easily as with a bank card.
-Version: 2.3.1
+Version: 2.3.2
 Author: Confirmo.net
 Author URI: https://confirmo.net
 Text Domain: confirmo-payment-gateway
@@ -233,6 +233,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     'HUF' => 'HUF',
                     'PLN' => 'PLN',
                     'USD' => 'USD',
+                    'USDC' => 'USDC',
+                    'USDT' => 'USDT',
                     '' => __('No conversion (the currency stays as it is)', 'confirmo-payment-gateway'),
                 );
 
@@ -283,6 +285,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     'HUF',
                     'PLN',
                     'USD',
+                    'USDC',
+                    'USDT',
                     ''
                 );
 
@@ -737,7 +741,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
             if (isset($input['settlement_currency'])) {
                 $settlement_currency = $input['settlement_currency']; //This is a number, 0-8..
-                $allowed_currencies = ['BTC', 'CZK', 'EUR', 'GBP', 'HUF', 'PLN', 'USD', ''];
+                $allowed_currencies = ['BTC', 'CZK', 'EUR', 'GBP', 'HUF', 'PLN', 'USD', 'USDC', 'USDT',''];
                 if ($allowed_currencies[$settlement_currency]) {
                     confirmo_set_wc_option("confirmo", "settlement_currency", $allowed_currencies[$settlement_currency]);
                     $new_input['settlement_currency'] = $allowed_currencies[$settlement_currency];
@@ -780,7 +784,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         {
             $options = get_option('confirmo_gate_config_options');
             $current_value = $options['settlement_currency'] ?? 'test';
-            $settlement_currency_options = ['BTC', 'CZK', 'EUR', 'GBP', 'HUF', 'PLN', 'USD', ''];
+            $settlement_currency_options = ['BTC', 'CZK', 'EUR', 'GBP', 'HUF', 'PLN', 'USD', 'USDC', 'USDT', ''];
             echo '<select id="settlement_currency" name="confirmo_gate_config_options[settlement_currency]">';
             foreach ($settlement_currency_options as $key => $label) {
                 $selected = ($settlement_currency_options[$key] == $current_value) ? 'selected' : '';
@@ -851,6 +855,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 'HUF' => 'HUF',
                 'PLN' => 'PLN',
                 'USD' => 'USD',
+                'USDC' => 'USDC', 
+                'USDT' => 'USDT',
                 '' => __('Keep it in kind (no conversion)', 'confirmo-payment-gateway'),
             );
 
