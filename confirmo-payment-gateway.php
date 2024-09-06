@@ -351,91 +351,88 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 }
             }
 
-            public function process_payment($order_id)
-            {
-                global $woocommerce;
+   public function process_payment($order_id)
+    {
+        global $woocommerce;
 
-                $order = wc_get_order($order_id);
-                $order_currency = $order->get_currency();
-                $total_amount = $order->get_total();
-                $product_name = '';
-                $product_description = '';
-                foreach ($order->get_items() as $item) {
-                    $product = $item->get_product();
-                    $product_name .= $product->get_name() . ' + ';
-                    $product_description .= $product->get_name() . ' (' . $item->get_quantity() . ') + ';
-                }
+        $order = wc_get_order($order_id);
+        $order_currency = $order->get_currency();
+        $total_amount = $order->get_total();
+        $product_name = '';
+        $product_description = '';
+        foreach ($order->get_items() as $item) {
+            $product = $item->get_product();
+            $product_name .= $product->get_name() . ' + ';
+            $product_description .= $product->get_name() . ' (' . $item->get_quantity() . ') + ';
+        }
 
-                $product_name = rtrim($product_name, ' + ');
-                $product_description = rtrim($product_description, ' + ');
-                $customer_email = $order->get_billing_email();
+        $product_name = rtrim($product_name, ' + ');
+        $product_description = rtrim($product_description, ' + ');
+        $customer_email = $order->get_billing_email();
 
-                $api_key = $this->get_option('api_key');
-                $url = 'https://confirmo.net/api/v3/invoices';
-// 				Nice url doesnt work..
-//               $notify_url = home_url('confirmo-notification');
+        $api_key = $this->get_option('api_key');
+        $url = 'https://confirmo.net/api/v3/invoices';
 
-                $notify_url = home_url("index.php?confirmo-notification=1");
-                $return_url = $order->get_checkout_order_received_url();
-                $settlement_currency = $this->get_option('settlement_currency');
+        $notify_url = home_url("index.php?confirmo-notification=1");
+        $return_url = $order->get_checkout_order_received_url();
+        $settlement_currency = $this->get_option('settlement_currency');
 
-                $headers = array(
-                    'Authorization' => 'Bearer ' . $api_key,
-                    'Content-Type' => 'application/json',
-                    'X-Payment-Module' => 'WooCommerce'
-                );
+        $headers = array(
+            'Authorization' => 'Bearer ' . $api_key,
+            'Content-Type' => 'application/json',
+            'X-Payment-Module' => 'WooCommerce'
+        );
 
-                $body = array(
-                    'settlement' => array('currency' => $settlement_currency),
-                    'product' => array('name' => $product_name, 'description' => $product_description),
-                    'invoice' => array('currencyFrom' => $order_currency, 'amount' => $total_amount),
-                    'notificationUrl' => $notify_url,
-                    'notifyUrl' => $notify_url,
-                    'returnUrl' => $return_url,
-                    'reference' => strval($order_id),
-                );
+        $body = array(
+            'settlement' => array('currency' => $settlement_currency),
+            'product' => array('name' => $product_name, 'description' => $product_description),
+            'invoice' => array('currencyFrom' => $order_currency, 'amount' => $total_amount),
+            'notificationUrl' => $notify_url,
+            'notifyUrl' => $notify_url,
+            'returnUrl' => $return_url,
+            'reference' => strval($order_id),
+        );
 
-                $response = wp_remote_post($url, array(
-                    'headers' => $headers,
-                    'body' => wp_json_encode($body),
-                    'method' => 'POST',
-                    'data_format' => 'body'
-                ));
+        $response = wp_remote_post($url, array(
+            'headers' => $headers,
+            'body' => wp_json_encode($body),
+            'method' => 'POST',
+            'data_format' => 'body'
+        ));
 
-                if (is_wp_error($response)) {
-                    $error_message = $response->get_error_message();
-                    wc_add_notice(__('Payment error: ', 'confirmo-payment-gateway') . $error_message, 'error');
-                    return;
-                }
+        if (is_wp_error($response)) {
+            $error_message = $response->get_error_message();
+            wc_add_notice(__('Payment error: ', 'confirmo-payment-gateway') . $error_message, 'error');
+            return;
+        }
 
-                $response_body = wp_remote_retrieve_body($response);
-                $response_data = json_decode($response_body, true);
+        $response_body = wp_remote_retrieve_body($response);
+        $response_data = json_decode($response_body, true);
 
-                error_log("Order ID before logging: " . $order_id);
-                error_log("API Response before logging: " . wp_json_encode($response_data));
+        if (!isset($response_data['url'])) {
+            wc_add_notice(__('Payment error: The Confirmo API response did not contain a url.', 'confirmo-payment-gateway'), 'error');
+            return;
+        }
 
+        $confirmo_redirect_url = $response_data['url'];
+        update_post_meta($order_id, '_confirmo_redirect_url', $confirmo_redirect_url);
+        
+        // Change: Set initial order status to 'pending'
+        $order->update_status('pending', __('Awaiting Confirmo payment.', 'confirmo-payment-gateway'));
+        
+        wc_reduce_stock_levels($order_id);
+        $woocommerce->cart->empty_cart();
 
-                if (!isset($response_data['url'])) {
-                    wc_add_notice(__('Payment error: The Confirmo API response did not contain a url.', 'confirmo-payment-gateway'), 'error');
-                    return;
-                }
-
-                $confirmo_redirect_url = $response_data['url'];
-                update_post_meta($order_id, '_confirmo_redirect_url', $confirmo_redirect_url);
-                $order->update_status('on-hold', __('Awaiting Confirmo payment.', 'confirmo-payment-gateway'));
-                wc_reduce_stock_levels($order_id);
-                $woocommerce->cart->empty_cart();
-
-                if ($order_id && $response_data) {
-                    confirmo_add_debug_log($order_id, wp_json_encode($response_data), $confirmo_redirect_url);
-                } else {
-                    error_log("Missing order_id or response_data");
-                }
-                return array(
-                    'result' => 'success',
-                    'redirect' => $confirmo_redirect_url
-                );
-            }
+        if ($order_id && $response_data) {
+            confirmo_add_debug_log($order_id, wp_json_encode($response_data), $confirmo_redirect_url);
+        } else {
+            error_log("Missing order_id or response_data");
+        }
+        return array(
+            'result' => 'success',
+            'redirect' => $confirmo_redirect_url
+        );
+    }
 
             public function confirmo_add_actions()
             {
@@ -455,57 +452,140 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 return $query_vars;
             }
 
-            public function confirmo_handle_notification()
-            {
-                global $wp_query;
+    public function confirmo_handle_notification()
+    {
+        global $wp_query;
 
-                if (isset($wp_query->query_vars['confirmo-notification'])) {
-                    $json = file_get_contents('php://input');
-                    if (!empty($this->callback_password)) {
-                        $signature = hash('sha256', $json . $this->callback_password);
-                        if ($_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
-                            error_log("Signature validation failed!");
-                        }
-                    } else {
-                        error_log("No callback password set, proceeding without validation.");
-                    }
-
-                    $data = json_decode($json, true);
-                    if (!is_array($data)) {
-                        error_log("Json not array!");
-                        exit;
-                    }
-
-                    $data = confirmo_sanitize_array($data);
-                    $order_id = $data['reference'];
-                    $order = wc_get_order($order_id);
-
-                    if (!$order) {
-                        error_log("Failed to retrieve order with reference: " . $order_id);
-                        exit;
-                    }
-
-                    switch ($data['status']) {
-                        case 'active':
-                            $order->update_status('on-hold', __('A new invoice with payment instructions was created.', 'confirmo-payment-gateway'));
-                            break;
-                        case 'confirming':
-                            $order->update_status('on-hold', __('The payment was received, the amount is correct or higher.', 'confirmo-payment-gateway'));
-                            break;
-                        case 'paid':
-                            $order->update_status('processing', __('The required amount has been confirmed.', 'confirmo-payment-gateway'));
-                            break;
-                        case 'expired':
-                            $order->update_status('failed', __('A payment has not been announced to the network within its active period, or the amount sent is lower than was requested.', 'confirmo-payment-gateway'));
-                            break;
-                        case 'error':
-                            $order->update_status('failed', __('Confirming failed.', 'confirmo-payment-gateway'));
-                            break;
-                    }
-
-                    exit;
+        if (isset($wp_query->query_vars['confirmo-notification'])) {
+            $json = file_get_contents('php://input');
+            
+            // Change: Improved signature validation and error logging
+            if (!empty($this->callback_password)) {
+                $signature = hash('sha256', $json . $this->callback_password);
+                if ($_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
+                    error_log("Confirmo: Signature validation failed!");
+                    wp_die('Invalid signature', '', array('response' => 403));
                 }
+            } else {
+                error_log("Confirmo: No callback password set, proceeding without validation.");
             }
+
+           $data = json_decode($json, true);
+        if (!is_array($data)) {
+            error_log("Confirmo: Invalid JSON data received.");
+            wp_die('Invalid data', '', array('response' => 400));
+        }
+
+        $data = confirmo_sanitize_array($data);
+        $order_id = $data['reference'];
+        $order = wc_get_order($order_id);
+
+        if (!$order) {
+            error_log("Confirmo: Failed to retrieve order with reference: " . $order_id);
+            wp_die('Order not found', '', array('response' => 404));
+        }
+
+        $verified_status = $this->confirmo_verify_invoice_status($data['id']);
+			
+        // Allow for small discrepancies in status
+        if ($verified_status !== false && $this->are_statuses_compatible($data['status'], $verified_status)) {
+            $is_lightning = isset($data['crypto']['network']) && $data['crypto']['network'] === 'LIGHTNING';
+            $this->confirmo_update_order_status($order, $data['status'], $is_lightning);
+            wp_die('OK', '', array('response' => 200));
+        } else {
+            error_log("Confirmo: Webhook status mismatch with API status for order: " . $order_id . ". Webhook: " . $data['status'] . ", API: " . $verified_status);
+            wp_die('Status mismatch', '', array('response' => 409));
+        }
+    }
+}
+			
+			private function are_statuses_compatible($webhook_status, $api_status)
+{
+    // Define compatible status pairs
+    $compatible_statuses = [
+        ['active', 'confirming'],
+        ['confirming', 'paid'],
+        ['paid', 'completed']
+    ];
+
+    // Check if the statuses are identical
+    if ($webhook_status === $api_status) {
+        return true;
+    }
+
+    // Check if the statuses are in our list of compatible pairs
+    foreach ($compatible_statuses as $pair) {
+        if (($webhook_status === $pair[0] && $api_status === $pair[1]) ||
+            ($webhook_status === $pair[1] && $api_status === $pair[0])) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+    // New function: Verify invoice status with Confirmo API
+   private function confirmo_verify_invoice_status($invoice_id)
+{
+    $api_key = $this->get_option('api_key');
+    $url = 'https://confirmo.net/api/v3/invoices/' . $invoice_id;
+
+    $response = wp_remote_get($url, array(
+        'headers' => array(
+            'Authorization' => 'Bearer ' . $api_key,
+            'Content-Type' => 'application/json',
+        )
+    ));
+
+    if (is_wp_error($response)) {
+        error_log("Confirmo: Error verifying invoice status: " . $response->get_error_message());
+        return false;
+    }
+
+    $response_body = wp_remote_retrieve_body($response);
+    $invoice_data = json_decode($response_body, true);
+
+    if (isset($invoice_data['status'])) {
+        return $invoice_data['status'];
+    }
+
+    return false;
+}
+
+
+
+    // New function: Update order status based on Confirmo status
+    private function confirmo_update_order_status($order, $confirmo_status, $is_lightning = false)
+    {
+        switch ($confirmo_status) {
+            case 'active':
+                $order->update_status('on-hold', __('Payment instructions created, awaiting payment.', 'confirmo-payment-gateway'));
+                break;
+            case 'confirming':
+                if ($is_lightning) {
+                    $order->update_status('processing', __('Lightning payment received, awaiting final confirmation', 'confirmo-payment-gateway'));
+                } else {
+                    $order->update_status('on-hold', __('Bitcoin payment received, awaiting confirmations', 'confirmo-payment-gateway'));
+                }
+                break;
+            case 'paid':
+                if ($is_lightning || $order->get_status() === 'processing') {
+                    $order->update_status('completed', __('Payment confirmed and completed', 'confirmo-payment-gateway'));
+                } else {
+                    $order->update_status('processing', __('Payment confirmed, processing order', 'confirmo-payment-gateway'));
+                }
+                break;
+            case 'expired':
+                $order->update_status('failed', __('Payment expired or insufficient amount', 'confirmo-payment-gateway'));
+                break;
+            case 'error':
+                $order->update_status('failed', __('Payment confirmation failed', 'confirmo-payment-gateway'));
+                break;
+        }
+        
+confirmo_add_debug_log($order->get_id(), "Order status updated to: " . $order->get_status() . " based on Confirmo status: " . $confirmo_status, 'order_status_update');
+
+    }
         }
 
         function confirmo_add_gateway_class($gateways)
