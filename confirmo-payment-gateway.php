@@ -2,7 +2,7 @@
 /*
 Plugin Name: Confirmo Cryptocurrency Payment Gateway
 Description: Accept most used cryptocurrency in your WooCommerce store with the Confirmo Cryptocurrency Payment Gateway as easily as with a bank card.
-Version: 2.4.0
+Version: 2.4.1
 Author: Confirmo.net
 Author URI: https://confirmo.net
 Text Domain: confirmo-payment-gateway
@@ -452,30 +452,34 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 return $query_vars;
             }
 
-    public function confirmo_handle_notification()
-    {
-        global $wp_query;
+  public function confirmo_handle_notification()
+{
+    global $wp_query;
 
-        if (isset($wp_query->query_vars['confirmo-notification'])) {
-            $json = file_get_contents('php://input');
-            
-            // Change: Improved signature validation and error logging
-            if (!empty($this->callback_password)) {
-                $signature = hash('sha256', $json . $this->callback_password);
-                if ($_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
-                    error_log("Confirmo: Signature validation failed!");
-                    wp_die('Invalid signature', '', array('response' => 403));
-                }
-            } else {
-                error_log("Confirmo: No callback password set, proceeding without validation.");
+    if (isset($wp_query->query_vars['confirmo-notification'])) {
+        $json = file_get_contents('php://input');
+        if (empty($json)) {
+            wp_die('No data', '', array('response' => 400));
+        }
+
+        // Validace callback password
+        if (!empty($this->callback_password)) {
+            $signature = hash('sha256', $json . $this->callback_password);
+            if ($_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
+                error_log("Confirmo: Signature validation failed!");
+                wp_die('Invalid signature', '', array('response' => 403));
             }
+        } else {
+            error_log("Confirmo: No callback password set, proceeding without validation.");
+        }
 
-           $data = json_decode($json, true);
+        $data = json_decode($json, true);
         if (!is_array($data)) {
             error_log("Confirmo: Invalid JSON data received.");
             wp_die('Invalid data', '', array('response' => 400));
         }
 
+        // Sanitizace dat
         $data = confirmo_sanitize_array($data);
         $order_id = $data['reference'];
         $order = wc_get_order($order_id);
@@ -485,9 +489,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             wp_die('Order not found', '', array('response' => 404));
         }
 
+        // Ověření stavu faktury přes API Confirmo
         $verified_status = $this->confirmo_verify_invoice_status($data['id']);
-			
-        // Allow for small discrepancies in status
+
+        // Kontrola, zda jsou stavy kompatibilní
         if ($verified_status !== false && $this->are_statuses_compatible($data['status'], $verified_status)) {
             $is_lightning = isset($data['crypto']['network']) && $data['crypto']['network'] === 'LIGHTNING';
             $this->confirmo_update_order_status($order, $data['status'], $is_lightning);
@@ -498,22 +503,22 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         }
     }
 }
+
 			
-			private function are_statuses_compatible($webhook_status, $api_status)
+private function are_statuses_compatible($webhook_status, $api_status)
 {
-    // Define compatible status pairs
     $compatible_statuses = [
         ['active', 'confirming'],
         ['confirming', 'paid'],
         ['paid', 'completed']
     ];
 
-    // Check if the statuses are identical
+    // Pokud jsou stavy totožné, jsou kompatibilní
     if ($webhook_status === $api_status) {
         return true;
     }
 
-    // Check if the statuses are in our list of compatible pairs
+    // Kontrola, zda je stav v seznamu kompatibilních párů
     foreach ($compatible_statuses as $pair) {
         if (($webhook_status === $pair[0] && $api_status === $pair[1]) ||
             ($webhook_status === $pair[1] && $api_status === $pair[0])) {
@@ -524,8 +529,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
     return false;
 }
 
-    // New function: Verify invoice status with Confirmo API
-   private function confirmo_verify_invoice_status($invoice_id)
+
+private function confirmo_verify_invoice_status($invoice_id)
 {
     $api_key = $this->get_option('api_key');
     $url = 'https://confirmo.net/api/v3/invoices/' . $invoice_id;
@@ -551,6 +556,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
     return false;
 }
+
 
 
 
