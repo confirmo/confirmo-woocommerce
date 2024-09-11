@@ -4,7 +4,7 @@ Contributors: confirmoadm
 Tags: Confirmo, Cryptocurrency, Crypto, Crypto Payments, Payment Gateway, Bitcoin, BTC, Ethereum, ETH, Litecoin, LTC, Solana, SOL, Tron, TRX, USDC, USDT, Tether  
 Requires at least: 6.2  
 Tested up to: 6.3  
-Stable tag: 2.4.0  
+Stable tag: 2.4.1  
 Requires PHP: 7.0  
 License: GPLv2 or later  
 License URI: http://www.gnu.org/licenses/gpl-2.0.html  
