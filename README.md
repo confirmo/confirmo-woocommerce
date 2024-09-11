@@ -1,9 +1,9 @@
 === Confirmo Cryptocurrency Payment Gateway ===
 
 Contributors: confirmoadm  
-Tags: Confirmo, Cryptocurrency, Crypto, Crypto Payments, Payment Gateway, Bitcoin, BTC, Ethereum, ETH, Litecoin, LTC, Solana, SOL, Tron, TRX, USDC, USDT, Tether  
+Tags: Confirmo, Cryptocurrency, Crypto, Crypto Payments, Payment Gateway  
 Requires at least: 6.2  
-Tested up to: 6.3  
+Tested up to: 6.6  
 Stable tag: 2.4.1  
 Requires PHP: 7.0  
 License: GPLv2 or later  
