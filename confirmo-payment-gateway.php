@@ -112,8 +112,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
     function confirmo_custom_payment()
     {
-        $currency = sanitize_text_field($_POST['currency']);
-        $amount = sanitize_text_field($_POST['amount']);
+        $currency = sanitize_text_field(wp_unslash($_POST['currency'] ?? null));
+        $amount = sanitize_text_field(wp_unslash($_POST['amount'] ?? null));
 
         $options = get_option('woocommerce_confirmo_settings');
         $api_key = isset($options['api_key']) ? $options['api_key'] : '';
@@ -329,17 +329,17 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
             public function process_admin_options()
             {
-                if (!wp_verify_nonce($_POST["confirmo-payment-gate-config"], "confirmo-config-nonce")) {
+                if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST["confirmo-payment-gate-config"] ?? null)), "confirmo-config-nonce")) {
                     wp_die("Bad nonce.");
                 }
                 try {
-                    $api_key = $this->confirmo_validate_and_sanitize_api_key($_POST['woocommerce_confirmo_api_key']);
+                    $api_key = $this->confirmo_validate_and_sanitize_api_key(sanitize_text_field(wp_unslash($_POST['woocommerce_confirmo_api_key'] ?? null)));
                     $_POST['woocommerce_confirmo_api_key'] = $api_key;
 
-                    $callback_password = $this->confirmo_validate_and_sanitize_callback_password($_POST['woocommerce_confirmo_callback_password']);
+                    $callback_password = $this->confirmo_validate_and_sanitize_callback_password(sanitize_text_field(wp_unslash($_POST['woocommerce_confirmo_callback_password'] ?? null)));
                     $_POST['woocommerce_confirmo_callback_password'] = $callback_password;
 
-                    $settlement_currency = $this->confirmo_validate_and_sanitize_settlement_currency($_POST['woocommerce_confirmo_settlement_currency']);
+                    $settlement_currency = $this->confirmo_validate_and_sanitize_settlement_currency(sanitize_text_field(wp_unslash($_POST['woocommerce_confirmo_settlement_currency'] ?? null)));
                     $_POST['woocommerce_confirmo_settlement_currency'] = $settlement_currency;
 
                     return parent::process_admin_options();
@@ -467,7 +467,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         // Validace callback password
         if (!empty($this->callback_password)) {
             $signature = hash('sha256', $json . $this->callback_password);
-            if ($_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
+            if (isset($_SERVER['HTTP_BP_SIGNATURE']) && $_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
                 error_log("Confirmo: Signature validation failed!");
                 wp_die('Invalid signature', '', array('response' => 403));
             }
@@ -1001,12 +1001,12 @@ confirmo_add_debug_log($order->get_id(), "Order status updated to: " . $order->g
                     </p>
                 </form>
                 <?php
-                if ($_SERVER['REQUEST_METHOD'] == 'POST' && wp_verify_nonce($_POST["confirmo_set_style_nonce"], "confirmo_set_style")) {
-                    $currency = sanitize_text_field($_POST['confirmo_currency']);
-                    $amount = sanitize_text_field($_POST['confirmo_amount']);
-                    $button_color = sanitize_hex_color($_POST['confirmo_button_color']);
-                    $text_color = sanitize_hex_color($_POST['confirmo_text_color']);
-                    $border_radius = intval($_POST['confirmo_border_radius']);
+                if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST' && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST["confirmo_set_style_nonce"] ?? null)), "confirmo_set_style")) {
+                    $currency = sanitize_text_field(wp_unslash($_POST['confirmo_currency'] ?? null));
+                    $amount = sanitize_text_field(wp_unslash($_POST['confirmo_amount'] ?? null));
+                    $button_color = sanitize_hex_color(wp_unslash($_POST['confirmo_button_color'] ?? null));
+                    $text_color = sanitize_hex_color(wp_unslash($_POST['confirmo_text_color'] ?? null));
+                    $border_radius = intval(wp_unslash($_POST['confirmo_border_radius'] ?? null));
 
                     echo "<h2>" . esc_html(__('Generated Shortcode:', 'confirmo-payment-gateway')) . "</h2>";
                     echo "<code>[confirmo currency=\"" . esc_attr($currency) . "\" amount=\"" . esc_attr($amount) . "\" button_color=\"" . esc_attr($button_color) . "\" text_color=\"" . esc_attr($text_color) . "\" border_radius=\"" . esc_attr($border_radius) . "\"]</code>";
@@ -1291,8 +1291,8 @@ function confirmo_custom_payment_template_redirect()
     global $wp_query;
 
     if (isset($wp_query->query_vars['confirmo-custom-payment'])) {
-        $currency = sanitize_text_field($_POST['currency']);
-        $amount = sanitize_text_field($_POST['amount']);
+        $currency = sanitize_text_field(wp_unslash($_POST['currency'] ?? null));
+        $amount = sanitize_text_field(wp_unslash($_POST['amount'] ?? null));
         $api_key = get_option('woocommerce_confirmo_api_key');
 
         $notification_url = home_url('confirmo-notification');
