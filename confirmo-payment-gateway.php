@@ -7,6 +7,8 @@ Author: Confirmo.net
 Author URI: https://confirmo.net
 Text Domain: confirmo-payment-gateway
 Domain Path: /languages
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
 
 // Compatibility with WooCommerce Blocks
