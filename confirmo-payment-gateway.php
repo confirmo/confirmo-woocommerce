@@ -899,12 +899,12 @@ confirmo_add_debug_log($order->get_id(), "Order status updated to: " . $order->g
             echo '<h2>' . esc_html(__('Enable the future of payments today', 'confirmo-payment-gateway')) . '</h2>';
             echo '<p>' . esc_html(__('Start accepting cryptocurrency payments with Confirmo, one of the fastest growing companies in crypto payments! We provide a payment gateway used by Forex brokers, prop trading companies, e-commerce merchants, and luxury businesses worldwide. Our clients include FTMO, My Forex Funds, Alza and many more. All rely on our easily integrated solutions, low fees, and top-class customer support.', 'confirmo-payment-gateway')) . '</p>';
 
-            echo '<h2>' . __('Installing the plugin', 'confirmo-payment-gateway') . '</h2>';
-            echo '<h3>' . __('WordPress plugins:', 'confirmo-payment-gateway') . '</h3>';
+            echo '<h2>' . esc_html(__('Installing the plugin', 'confirmo-payment-gateway')) . '</h2>';
+            echo '<h3>' . esc_html(__('WordPress plugins:', 'confirmo-payment-gateway')) . '</h3>';
             echo '<ol>';
-            echo '<li>' . __('In your WordPress dashboard, go to Plugins – Add New, and search for \'Confirmo Cryptocurrency Payment Gateway\'.', 'confirmo-payment-gateway') . '</li>';
-            echo '<li>' . __('Click Download, and then activate the plugin.', 'confirmo-payment-gateway') . '</li>';
-            echo '<li>' . __('In your WordPress dashboard, go to WooCommerce – Settings – Payments. Click Confirmo. You will be asked to configure the plugin with information generated in your Confirmo account to connect them.', 'confirmo-payment-gateway') . '</li>';
+            echo '<li>' . esc_html(__('In your WordPress dashboard, go to Plugins – Add New, and search for \'Confirmo Cryptocurrency Payment Gateway\'.', 'confirmo-payment-gateway')) . '</li>';
+            echo '<li>' . esc_html(__('Click Download, and then activate the plugin.', 'confirmo-payment-gateway')) . '</li>';
+            echo '<li>' . esc_html(__('In your WordPress dashboard, go to WooCommerce – Settings – Payments. Click Confirmo. You will be asked to configure the plugin with information generated in your Confirmo account to connect them.', 'confirmo-payment-gateway')) . '</li>';
             echo '</ol>';
 
             echo '<h3>' . esc_html(__('Upload:', 'confirmo-payment-gateway')) . '</h3>';
@@ -923,13 +923,13 @@ confirmo_add_debug_log($order->get_id(), "Order status updated to: " . $order->g
             echo '</ol>';
 
             echo '<h2>' . esc_html(__('Connecting the plugin to your Confirmo account:', 'confirmo-payment-gateway')) . '</h2>';
-            echo '<p>' . __('Create an account at <a href="https://confirmo.net">Confirmo.net</a> and then go to Settings – API Keys – Create API key. You will be required to complete an e-mail verification, after which you will receive the API key. Once you have it, go to WooCommerce – Settings – Payments, and enable Confirmo as a payment method. Paste the API key into the respective field.', 'confirmo-payment-gateway') . '</p>';
+            echo '<p>' . wp_kses(__('Create an account at <a href="https://confirmo.net">Confirmo.net</a> and then go to Settings – API Keys – Create API key. You will be required to complete an e-mail verification, after which you will receive the API key. Once you have it, go to WooCommerce – Settings – Payments, and enable Confirmo as a payment method. Paste the API key into the respective field.', 'confirmo-payment-gateway')) . '</p>';
 
             echo '<p>' . esc_html(__('To generate a callback password, return to the Confirmo dashboard and go to Settings – Callback password. You will be prompted to complete a second e-mail verification and then provided with the callback password. Again, paste it into the respective field in WooCommerce – Settings – Payments. Callback passwords help increase the security of the API integration. Never share your API key or callback password with anyone!', 'confirmo-payment-gateway')) . '</p>';
 
-            echo '<p>' . __('Finally, choose your desired Settlement currency. Make sure to save your changes by clicking the button at the bottom. When the plugin is activated, Confirmo will appear as a payment option in your website\'s WooCommerce checkout. <b>Congratulations, you can now start receiving cryptocurrency payments!</b>', 'confirmo-payment-gateway') . '</p>';
+            echo '<p>' . wp_kses(__('Finally, choose your desired Settlement currency. Make sure to save your changes by clicking the button at the bottom. When the plugin is activated, Confirmo will appear as a payment option in your website\'s WooCommerce checkout. <strong>Congratulations, you can now start receiving cryptocurrency payments!</strong>', 'confirmo-payment-gateway')) . '</p>';
 
-            echo '<p>' . __('Read more at <a href="https://confirmo.net">Confirmo.net</a>. Should you encounter any difficulties, <a href="mailto:support@confirmo.net">contact us</a> at support@confirmo.net', 'confirmo-payment-gateway') . '</p>';
+            echo '<p>' . wp_kses(__('Read more at <a href="https://confirmo.net">Confirmo.net</a>. Should you encounter any difficulties, <a href="mailto:support@confirmo.net">contact us</a> at support@confirmo.net', 'confirmo-payment-gateway')) . '</p>';
             echo '</div>';
         }
 
@@ -1045,7 +1045,7 @@ confirmo_add_debug_log($order->get_id(), "Order status updated to: " . $order->g
                 echo '</table>';
                 echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
                 echo '<input type="hidden" name="confirmo_download_logs" value="1">';
-                echo '<p><button type="submit" class="button button-primary">' . __('Download Debug Logs', 'confirmo-payment-gateway') . '</button></p>';
+                echo '<p><button type="submit" class="button button-primary">' . esc_html(__('Download Debug Logs', 'confirmo-payment-gateway')) . '</button></p>';
                 echo '</form>';
                 echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
                 echo '<input type="hidden" name="action" value="confirmo_delete_logs">';
@@ -1199,7 +1199,7 @@ confirmo_add_debug_log($order->get_id(), "Order status updated to: " . $order->g
             echo '</ol>';
 
             echo '<h2>' . esc_html(__('Connecting the plugin to your Confirmo account:', 'confirmo-payment-gateway')) . '</h2>';
-            echo '<p>' . __('Create an account at <a href="https://confirmo.net">Confirmo.net</a> and then go to Settings – API Keys – Create API key. You will be required to complete an e-mail verification, after which you will receive the API key. Once you have it, go to WooCommerce – Settings – Payments, and enable Confirmo as a payment method. Paste the API key into the respective field.', 'confirmo-payment-gateway') . '</p>';
+            echo '<p>' . wp_kses(__('Create an account at <a href="https://confirmo.net">Confirmo.net</a> and then go to Settings – API Keys – Create API key. You will be required to complete an e-mail verification, after which you will receive the API key. Once you have it, go to WooCommerce – Settings – Payments, and enable Confirmo as a payment method. Paste the API key into the respective field.', 'confirmo-payment-gateway')) . '</p>';
 
             echo '<p>' . esc_html(__('To generate a callback password, return to the Confirmo dashboard and go to Settings – Callback password. You will be prompted to complete a second e-mail verification and then provided with the callback password. Again, paste it into the respective field in WooCommerce – Settings – Payments. Callback passwords help increase the security of the API integration. Never share your API key or callback password with anyone!', 'confirmo-payment-gateway')) . '</p>';
 
@@ -1217,7 +1217,7 @@ confirmo_add_debug_log($order->get_id(), "Order status updated to: " . $order->g
             echo '<li><b>' . esc_html(__('border_radius', 'confirmo-payment-gateway')) . '</b>: ' . esc_html(__('The button border radius (in pixels)', 'confirmo-payment-gateway')) . '</li>';
             echo '</ul>';
 
-            echo '<p>' . __('Read more at <a href="https://confirmo.net">Confirmo.net</a>. Should you encounter any difficulties, <a href="mailto:support@confirmo.net">contact us</a> at support@confirmo.net', 'confirmo-payment-gateway') . '</p>';
+            echo '<p>' . wp_kses(__('Read more at <a href="https://confirmo.net">Confirmo.net</a>. Should you encounter any difficulties, <a href="mailto:support@confirmo.net">contact us</a> at support@confirmo.net', 'confirmo-payment-gateway')) . '</p>';
             echo '</div>';
         }
 
