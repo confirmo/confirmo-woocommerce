@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Confirmo Cryptocurrency Payment Gateway
-Description: Accept most used cryptocurrency in your WooCommerce store with the Confirmo Cryptocurrency Payment Gateway as easily as with a bank card.
+Description: Accept crypto & stablecoin payments in WooCommerce with Confirmo. BTC (+ Lightning), USDT & USDC, ETH and more.
 Version: 2.4.2
 Author: Confirmo.net
 Author URI: https://confirmo.net
@@ -416,10 +416,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
         $confirmo_redirect_url = $response_data['url'];
         update_post_meta($order_id, '_confirmo_redirect_url', $confirmo_redirect_url);
-        
+
         // Change: Set initial order status to 'pending'
         $order->update_status('pending', __('Awaiting Confirmo payment.', 'confirmo-payment-gateway'));
-        
+
         wc_reduce_stock_levels($order_id);
         $woocommerce->cart->empty_cart();
 
@@ -504,7 +504,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
     }
 }
 
-			
+
 private function are_statuses_compatible($webhook_status, $api_status)
 {
     $compatible_statuses = [
@@ -593,7 +593,7 @@ private function confirmo_verify_invoice_status($invoice_id)
                 $order->update_status('failed', __('Payment confirmation failed', 'confirmo-payment-gateway'));
                 break;
         }
-        
+
 confirmo_add_debug_log($order->get_id(), "Order status updated to: " . $order->get_status() . " based on Confirmo status: " . $confirmo_status, 'order_status_update');
 
     }
@@ -946,7 +946,7 @@ confirmo_add_debug_log($order->get_id(), "Order status updated to: " . $order->g
                 'HUF' => 'HUF',
                 'PLN' => 'PLN',
                 'USD' => 'USD',
-                'USDC' => 'USDC', 
+                'USDC' => 'USDC',
                 'USDT' => 'USDT',
                 '' => __('Keep it in kind (no conversion)', 'confirmo-payment-gateway'),
             );
@@ -1333,5 +1333,3 @@ function confirmo_custom_payment_template_redirect()
 }
 
 add_action('template_redirect', 'confirmo_custom_payment_template_redirect');
-
-
