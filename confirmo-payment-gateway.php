@@ -2,7 +2,7 @@
 /*
 Plugin Name: Confirmo Cryptocurrency Payment Gateway
 Description: Accept crypto & stablecoin payments in WooCommerce with Confirmo. BTC (+ Lightning), USDT & USDC, ETH and more.
-Version: 2.4.2
+Version: 2.4.3
 Author: Confirmo.net
 Author URI: https://confirmo.net
 Text Domain: confirmo-payment-gateway
@@ -524,7 +524,7 @@ private function are_statuses_compatible($webhook_status, $api_status)
         // Check if the status is in the list of compatible pairs
     foreach ($compatible_statuses as $pair) {
         if (
-            ($webhook_status === $pair[0] && $api_status === $pair[1]) 
+            ($webhook_status === $pair[0] && $api_status === $pair[1])
             ($webhook_status === $pair[1] && $api_status === $pair[0])
         ) {
             return true;
