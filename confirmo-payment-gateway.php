@@ -462,7 +462,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             wp_die('No data', '', array('response' => 400));
         }
 
-        // Validace callback password
+        // Validation callback password
         if (!empty($this->callback_password)) {
             $signature = hash('sha256', $json . $this->callback_password);
             if ($_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
@@ -489,10 +489,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             wp_die('Order not found', '', array('response' => 404));
         }
 
-        // Ověření stavu faktury přes API Confirmo
+        // Invoice status verification via API Confirmo
         $verified_status = $this->confirmo_verify_invoice_status($data['id']);
 
-        // Kontrola, zda jsou stavy kompatibilní
+        // Checking if the states are compatible
         if ($verified_status !== false && $this->are_statuses_compatible($data['status'], $verified_status)) {
             $is_lightning = isset($data['crypto']['network']) && $data['crypto']['network'] === 'LIGHTNING';
             $this->confirmo_update_order_status($order, $data['status'], $is_lightning);
@@ -516,15 +516,15 @@ private function are_statuses_compatible($webhook_status, $api_status)
         ['confirming', 'completed']  // Přidáno
     ];
 
-    // Pokud jsou stavy totožné, jsou kompatibilní
+    // If the states are identical, they are compatible
     if ($webhook_status === $api_status) {
         return true;
     }
 
-    // Kontrola, zda je stav v seznamu kompatibilních párů
+        // Check if the status is in the list of compatible pairs
     foreach ($compatible_statuses as $pair) {
         if (
-            ($webhook_status === $pair[0] && $api_status === $pair[1]) ||
+            ($webhook_status === $pair[0] && $api_status === $pair[1]) 
             ($webhook_status === $pair[1] && $api_status === $pair[0])
         ) {
             return true;
