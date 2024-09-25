@@ -4,7 +4,7 @@ Contributors: confirmoadm
 Tags: Confirmo, Cryptocurrency, Crypto, Crypto Payments, Payment Gateway  
 Requires at least: 6.2  
 Tested up to: 6.6  
-Stable tag: 2.4.3  
+Stable tag: 2.4.4  
 Requires PHP: 7.0  
 License: GPLv2 or later  
 License URI: http://www.gnu.org/licenses/gpl-2.0.html  
