@@ -2,14 +2,15 @@
 /*
 Plugin Name: Confirmo Cryptocurrency Payment Gateway
 Description: Accept crypto & stablecoin payments in WooCommerce with Confirmo. BTC (+ Lightning), USDT & USDC, ETH and more.
-Version: 2.4.2
+Version: 2.4.4
 Author: Confirmo.net
 Author URI: https://confirmo.net
 Text Domain: confirmo-payment-gateway
 Domain Path: /languages
 */
 
-// Compatibility with WooCommerce Blocks
+// Compatibility with WooCommerce Blocks$gateway = new WC_Confirmo_Gateway();
+
 function declare_cart_checkout_blocks_compatibility()
 {
     // Check if the required class exists
@@ -141,7 +142,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             ),
             'body' => wp_json_encode($data)
         ));
-
+        
+        if (is_wp_error($response)) {
+            $error_message = $response->get_error_message();
+            wp_send_json_error(__('Error: ', 'confirmo-payment-gateway') . $error_message);
+            return;
+        }
+        
         $response_body = wp_remote_retrieve_body($response);
         $response_data = json_decode($response_body, true);
 
@@ -201,6 +208,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $this->settlement_currency = $this->get_option('settlement_currency');
                 $this->callback_password = $this->get_option('callback_password');
                 $this->title = __("Confirmo", 'confirmo-payment-gateway');
+                $this->description = $this->get_option('description');
+
                 // If needed, other initializations can be done here.
                 // Adding custom admin notices
                 // add_action('admin_notices', array($this, 'show_custom_admin_notice'));
@@ -351,6 +360,22 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 }
             }
 
+     function confirmo_generate_notify_url() {
+                // Getting the base URL using the home_url function, which automatically resolves language variants
+                $notify_url = home_url('index.php?confirmo-notification=1');
+            
+                // Sanitizing the URL so that it does not contain invalid characters
+                $notify_url = esc_url($notify_url);
+            
+                // Check if the URL contains a pipe or other invalid characters
+                if (strpos($notify_url, '|') !== false) {
+                    // If a pipe character is found, remove it
+                    $notify_url = str_replace('|', '', $notify_url);
+                }
+            
+                return $notify_url;
+    }
+
    public function process_payment($order_id)
     {
         global $woocommerce;
@@ -373,7 +398,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         $api_key = $this->get_option('api_key');
         $url = 'https://confirmo.net/api/v3/invoices';
 
-        $notify_url = home_url("index.php?confirmo-notification=1");
+        $notify_url = confirmo_generate_notify_url();
         $return_url = $order->get_checkout_order_received_url();
         $settlement_currency = $this->get_option('settlement_currency');
 
@@ -438,7 +463,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             {
                 add_action('init', array($this, 'confirmo_add_endpoint'));
                 add_filter('query_vars', array($this, 'confirmo_add_query_var'));
-                add_action('template_redirect', array($this, 'confirmo_handle_notification'));
+                add_action('template_redirect', array('WC_Confirmo_Gateway', 'confirmo_handle_notification'));
+
             }
 
             public function confirmo_add_endpoint()
@@ -452,7 +478,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 return $query_vars;
             }
 
-  public function confirmo_handle_notification()
+  public static function confirmo_handle_notification()
 {
     global $wp_query;
 
@@ -463,8 +489,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         }
 
         // Validation callback password
-        if (!empty($this->callback_password)) {
-            $signature = hash('sha256', $json . $this->callback_password);
+        $options = get_option('woocommerce_confirmo_settings');
+        $callback_password = isset($options['callback_password']) ? $options['callback_password'] : '';
+
+        if (!empty($callback_password)) {
+            $signature = hash('sha256', $json . $callback_password);
             if ($_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
                 error_log("Confirmo: Signature validation failed!");
                 wp_die('Invalid signature', '', array('response' => 403));
@@ -472,6 +501,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         } else {
             error_log("Confirmo: No callback password set, proceeding without validation.");
         }
+
 
         $data = json_decode($json, true);
         if (!is_array($data)) {
@@ -524,7 +554,7 @@ private function are_statuses_compatible($webhook_status, $api_status)
         // Check if the status is in the list of compatible pairs
     foreach ($compatible_statuses as $pair) {
         if (
-            ($webhook_status === $pair[0] && $api_status === $pair[1]) 
+            ($webhook_status === $pair[0] && $api_status === $pair[1]) ||
             ($webhook_status === $pair[1] && $api_status === $pair[0])
         ) {
             return true;
@@ -779,16 +809,41 @@ confirmo_add_debug_log($order->get_id(), "Order status updated to: " . $order->g
                 'confirmo-payment-gate-config',
                 'confirmo_gate_config_main'
             );
+
+            add_settings_field(
+                'description',
+                __('Description on checkout page', 'confirmo-payment-gateway'),
+                'confirmo_gate_config_description_callback',
+                'confirmo-payment-gate-config',
+                'confirmo_gate_config_main'
+            );
+            
         }
+
+        function confirmo_gate_config_description_callback()
+        {
+            $options = get_option('confirmo_gate_config_options');
+            $value = isset($options['description']) ? esc_textarea($options['description']) : '';
+            echo '<textarea id="description" name="confirmo_gate_config_options[description]" rows="5" cols="50">' . $value . '</textarea>';
+        }
+
 
         function confirmo_set_wc_option($gateway_id, $option_key, $new_value)
         {
             $options = get_option('woocommerce_' . $gateway_id . '_settings');
-            if (is_array($options) && isset($options[$option_key])) {
-                $options[$option_key] = $new_value;
-                update_option('woocommerce_' . $gateway_id . '_settings', $options);
+        
+            // If the options are not an array, initialize it
+            if (!is_array($options)) {
+                $options = array();
             }
+        
+            // Set the new option key and value
+            $options[$option_key] = $new_value;
+        
+            // Update the WooCommerce settings for the gateway
+            update_option('woocommerce_' . $gateway_id . '_settings', $options);
         }
+        
         function confirmo_get_wc_option($gateway_id, $option_key)
         {
             $options = get_option('woocommerce_' . $gateway_id . '_settings');
@@ -802,6 +857,12 @@ confirmo_add_debug_log($order->get_id(), "Order status updated to: " . $order->g
             $new_input = array();
             $option_key = 'woocommerce_confirmo_settings';
             $settings = get_option($option_key, array());
+
+            if (isset($input['description'])) {
+                $description = sanitize_text_field($input['description']);
+                $new_input['description'] = $description;
+                confirmo_set_wc_option("confirmo", "description", $description);
+            }            
 
             if (isset($input['enabled'])) {
                 $new_input['enabled'] = $input['enabled'] === 'on' ? 'yes' : 'no';
