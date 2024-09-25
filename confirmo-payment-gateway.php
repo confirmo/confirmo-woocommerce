@@ -361,7 +361,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
      private function confirmo_generate_notify_url() {
                 // Getting the base URL using the home_url function, which automatically resolves language variants
-                $notify_url = home_url('index.php?confirmo-notification=1');
+                $notify_url = home_url('?confirmo-notification=1');
             
                 // Sanitizing the URL so that it does not contain invalid characters
                 $notify_url = esc_url($notify_url);
@@ -469,7 +469,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
             public function confirmo_add_endpoint()
             {
-                add_rewrite_rule('^confirmo-notification/?', 'index.php?confirmo-notification=1', 'top');
+                add_rewrite_rule('^confirmo-notification/?', '?confirmo-notification=1', 'top');
             }
 
             public function confirmo_add_query_var($query_vars)
