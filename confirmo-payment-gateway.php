@@ -361,7 +361,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
      private function confirmo_generate_notify_url() {
                 // Getting the base URL using the home_url function, which automatically resolves language variants
-                $notify_url = home_url('index.php?confirmo-notification=1');
+                $notify_url = home_url('?confirmo-notification=1');
+
             
                 // Sanitizing the URL so that it does not contain invalid characters
                 $notify_url = esc_url($notify_url);
@@ -469,7 +470,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
             public function confirmo_add_endpoint()
             {
-                add_rewrite_rule('^confirmo-notification/?', 'index.php?confirmo-notification=1', 'top');
+                add_rewrite_rule('^confirmo-notification/?', '?confirmo-notification=1', 'top');
             }
 
             public function confirmo_add_query_var($query_vars)
@@ -488,6 +489,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             wp_die('No data', '', array('response' => 400));
         }
 
+
 // Validation callback password
 if (!empty($this->callback_password)) {
     $signature = hash('sha256', $json . $this->callback_password);
@@ -498,6 +500,8 @@ if (!empty($this->callback_password)) {
 } else {
     error_log("Confirmo: No callback password set, proceeding without validation.");
 }
+
+
 
 
         $data = json_decode($json, true);
