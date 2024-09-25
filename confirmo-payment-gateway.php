@@ -362,6 +362,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
      private function confirmo_generate_notify_url() {
                 // Getting the base URL using the home_url function, which automatically resolves language variants
                 $notify_url = home_url('?confirmo-notification=1');
+
             
                 // Sanitizing the URL so that it does not contain invalid characters
                 $notify_url = esc_url($notify_url);
@@ -488,19 +489,19 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             wp_die('No data', '', array('response' => 400));
         }
 
-        // Validation callback password
-        $callback_password = $this->callback_password;
+
+// Validation callback password
+if (!empty($this->callback_password)) {
+    $signature = hash('sha256', $json . $this->callback_password);
+    if (!isset($_SERVER['HTTP_BP_SIGNATURE']) || $_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
+        error_log("Confirmo: Signature validation failed!");
+        wp_die('Invalid signature', '', array('response' => 403));
+    }
+} else {
+    error_log("Confirmo: No callback password set, proceeding without validation.");
+}
 
 
-        if (!empty($callback_password)) {
-            $signature = hash('sha256', $json . $callback_password);
-            if ($_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
-                error_log("Confirmo: Signature validation failed!");
-                wp_die('Invalid signature', '', array('response' => 403));
-            }
-        } else {
-            error_log("Confirmo: No callback password set, proceeding without validation.");
-        }
 
 
         $data = json_decode($json, true);
@@ -554,7 +555,7 @@ private function are_statuses_compatible($webhook_status, $api_status)
         // Check if the status is in the list of compatible pairs
     foreach ($compatible_statuses as $pair) {
         if (
-            ($webhook_status === $pair[0] && $api_status === $pair[1]) ||
+            ($webhook_status === $pair[0] && $api_status === $pair[1])
             ($webhook_status === $pair[1] && $api_status === $pair[0])
         ) {
             return true;
