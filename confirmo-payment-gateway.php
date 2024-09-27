@@ -2,7 +2,7 @@
 /*
 Plugin Name: Confirmo Cryptocurrency Payment Gateway
 Description: Accept crypto & stablecoin payments in WooCommerce with Confirmo. BTC (+ Lightning), USDT & USDC, ETH and more.
-Version: 2.4.6
+Version: 2.4.7
 Author: Confirmo.net
 Author URI: https://confirmo.net
 Text Domain: confirmo-payment-gateway
@@ -611,7 +611,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         if ($is_lightning || $order->get_status() === 'processing') {
                             $order->update_status('completed', __('Payment confirmed and completed', 'confirmo-payment-gateway'));
                         } else {
-                            $order->update_status('processing', __('Payment confirmed, processing order', 'confirmo-payment-gateway'));
+                            if ($order->get_status() !== "completed") {
+                                $order->update_status('processing', __('Payment confirmed, processing order', 'confirmo-payment-gateway'));
+                            }
                         }
                         break;
                     case 'expired':
@@ -1087,6 +1089,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             echo '<div class="wrap">';
             echo '<h1>' . esc_html(__('Confirmo Debug Information', 'confirmo-payment-gateway')) . '</h1>';
             echo '<p>' . esc_html(__('If you encounter any issues, please download these debug logs and send them to plugin support.', 'confirmo-payment-gateway')) . '</p>';
+            echo "<p>SHA-256 Hash: " . esc_html(hash('sha256', file_get_contents(__FILE__))) . "</p>";
 
             if (!empty($recent_logs)) {
                 echo '<table class="widefat fixed" cellspacing="0">';
