@@ -601,20 +601,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $order->update_status('on-hold', __('Payment instructions created, awaiting payment.', 'confirmo-payment-gateway'));
                         break;
                     case 'confirming':
-                        if ($is_lightning) {
-                            $order->update_status('processing', __('Lightning payment received, awaiting final confirmation', 'confirmo-payment-gateway'));
-                        } else {
-                            $order->update_status('on-hold', __('Bitcoin payment received, awaiting confirmations', 'confirmo-payment-gateway'));
-                        }
+                        $order->update_status('on-hold', __('Bitcoin payment received, awaiting confirmations', 'confirmo-payment-gateway'));
                         break;
                     case 'paid':
-                        if ($is_lightning || $order->get_status() === 'processing') {
-                            $order->update_status('completed', __('Payment confirmed and completed', 'confirmo-payment-gateway'));
-                        } else {
-                            if ($order->get_status() !== "completed") {
-                                $order->update_status('processing', __('Payment confirmed, processing order', 'confirmo-payment-gateway'));
-                            }
-                        }
+                        $order->payment_complete();
                         break;
                     case 'expired':
                         $order->update_status('failed', __('Payment expired or insufficient amount', 'confirmo-payment-gateway'));
@@ -625,7 +615,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 }
 
                 confirmo_add_debug_log($order->get_id(), "Order status updated to: " . $order->get_status() . " based on Confirmo status: " . $confirmo_status, 'order_status_update');
-
             }
         }
 
