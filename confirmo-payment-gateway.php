@@ -490,8 +490,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         wp_die('No data', '', array('response' => 400));
                     }
 
-
-// Validation callback password
+                    // Validation callback password
                     if (!empty($this->callback_password)) {
                         $signature = hash('sha256', $json . $this->callback_password);
                         if (!isset($_SERVER['HTTP_BP_SIGNATURE']) || $_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
@@ -523,45 +522,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $verified_status = $this->confirmo_verify_invoice_status($data['id']);
 
                     // Checking if the states are compatible
-                    if ($verified_status !== false && $this->confirmo_are_statuses_compatible($data['status'], $verified_status)) {
-                        $is_lightning = isset($data['crypto']['network']) && $data['crypto']['network'] === 'LIGHTNING';
-                        $this->confirmo_update_order_status($order, $data['status'], $is_lightning);
+                    if ($verified_status !== false) {
+                        $this->confirmo_update_order_status($order, strtolower($verified_status));
                         wp_die('OK', '', array('response' => 200));
                     } else {
-                        error_log("Confirmo: Webhook status mismatch with API status for order: " . $order_id . ". Webhook: " . $data['status'] . ", API: " . $verified_status);
-                        wp_die('Status mismatch', '', array('response' => 409));
+                        error_log("Confirmo: Error fetching invoice status for order: " . $order_id);
+                        wp_die('Error fetching invoice status', '', array('response' => 409));
                     }
                 }
-            }
-
-
-            public function confirmo_are_statuses_compatible($webhook_status, $api_status): bool
-            {
-                $compatible_statuses = [
-                    ['active', 'confirming'],
-                    ['confirming', 'paid'],
-                    ['paid', 'completed'],
-                    ['active', 'paid'],          // Přidáno
-                    ['active', 'completed'],     // Přidáno
-                    ['confirming', 'completed']  // Přidáno
-                ];
-
-                // If the states are identical, they are compatible
-                if ($webhook_status === $api_status) {
-                    return true;
-                }
-
-                // Check if the status is in the list of compatible pairs
-                foreach ($compatible_statuses as $pair) {
-                    if (
-                        ($webhook_status === $pair[0] && $api_status === $pair[1]) ||
-                        ($webhook_status === $pair[1] && $api_status === $pair[0])
-                    ) {
-                        return true;
-                    }
-                }
-
-                return false;
             }
 
 
@@ -594,14 +562,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
 
             // New function: Update order status based on Confirmo status
-            private function confirmo_update_order_status($order, $confirmo_status, $is_lightning = false)
+            private function confirmo_update_order_status($order, $confirmo_status)
             {
                 switch ($confirmo_status) {
                     case 'active':
                         $order->update_status('on-hold', __('Payment instructions created, awaiting payment.', 'confirmo-payment-gateway'));
                         break;
                     case 'confirming':
-                        $order->update_status('on-hold', __('Bitcoin payment received, awaiting confirmations', 'confirmo-payment-gateway'));
+                        $order->update_status('on-hold', __('Payment received, awaiting confirmations', 'confirmo-payment-gateway'));
                         break;
                     case 'paid':
                         $order->payment_complete();
@@ -612,6 +580,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     case 'error':
                         $order->update_status('failed', __('Payment confirmation failed', 'confirmo-payment-gateway'));
                         break;
+                    default:
+                        confirmo_add_debug_log($order->get_id(), "Received unknown status: " . $confirmo_status, 'order_status_update');
                 }
 
                 confirmo_add_debug_log($order->get_id(), "Order status updated to: " . $order->get_status() . " based on Confirmo status: " . $confirmo_status, 'order_status_update');
