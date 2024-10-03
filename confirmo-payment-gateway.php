@@ -566,10 +566,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             {
                 switch ($confirmo_status) {
                     case 'prepared':
-                        // An invoice has been prepared. Do nothing.
+                        $order->update_status('on-hold', __('Payment instructions created, awaiting payment.', 'confirmo-payment-gateway'));
                         break;
                     case 'active':
-                        $order->update_status('on-hold', __('Payment instructions created, awaiting payment.', 'confirmo-payment-gateway'));
+                        $order->update_status('on-hold', __('Client selects crypto payment method, awaiting payment.', 'confirmo-payment-gateway'));
                         break;
                     case 'confirming':
                         $order->update_status('on-hold', __('Payment received, awaiting confirmations', 'confirmo-payment-gateway'));
