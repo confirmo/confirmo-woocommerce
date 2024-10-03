@@ -7,6 +7,8 @@ Author: Confirmo.net
 Author URI: https://confirmo.net
 Text Domain: confirmo-payment-gateway
 Domain Path: /languages
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
 
 // Compatibility with WooCommerce Blocks$gateway = new WC_Confirmo_Gateway();
@@ -199,6 +201,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
         class WC_Confirmo_Gateway extends WC_Payment_Gateway
         {
+            protected $api_key;
+            protected $settlement_currency;
+            protected $callback_password;
+
             public function __construct()
             {
                 $this->id = "confirmo";
@@ -565,8 +571,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             private function confirmo_update_order_status($order, $confirmo_status)
             {
                 switch ($confirmo_status) {
-                    case 'active':
+                    case 'prepared':
                         $order->update_status('on-hold', __('Payment instructions created, awaiting payment.', 'confirmo-payment-gateway'));
+                        break;
+                    case 'active':
+                        $order->update_status('on-hold', __('Client selects crypto payment method, awaiting payment.', 'confirmo-payment-gateway'));
                         break;
                     case 'confirming':
                         $order->update_status('on-hold', __('Payment received, awaiting confirmations', 'confirmo-payment-gateway'));
