@@ -18,6 +18,8 @@ Start accepting cryptocurrency payments with Confirmo, one of the fastest growin
 
 By accepting crypto payments you open your business to a new revenue stream. Despite being commonly viewed as an investment tool, cryptocurrencies were created as an alternative to centralized, inflationary financial systems, and crypto holders are now looking for businesses which accept their funds. Using Confirmo's WooCommerce plugin is a simple way to do so. Installing it is quick and easy, so choose your preferred method below.
 
+> This plugin connects your WooCommerce instance with the 3rd-party service Confirmo. More information about the Confirmo crypto payment gateway can be found at [https://confirmo.net](https://confirmo.net). An integral part of the plugin is the API requests to Confirmo, which are described in more detail in [https://confirmo.net/docs/api-reference/](the Confirmo API documentation).
+
 
 ## Installing the plugin
 
@@ -91,3 +93,7 @@ The fee you will pay for Payouts (one-time crypto withdrawals) is 0.5%. For each
 This means that if you send $100 worth of BTC to your contractor, they will receive $100 worth of BTC. You will be charged a transaction fee which will be deducted from your USD or EUR balance.
 
 Settlements (recurrent withdrawals) are free, but bank fees apply.
+
+= Where can I find the Terms & Conditions? =
+
+The most up-to-date Terms & Conditions are available on the Confirmo website in [https://confirmo.net/legal/terms-and-conditions](the Terms & Conditions) section.
