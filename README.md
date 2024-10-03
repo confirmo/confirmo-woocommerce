@@ -18,7 +18,7 @@ Start accepting cryptocurrency payments with Confirmo, one of the fastest growin
 
 By accepting crypto payments you open your business to a new revenue stream. Despite being commonly viewed as an investment tool, cryptocurrencies were created as an alternative to centralized, inflationary financial systems, and crypto holders are now looking for businesses which accept their funds. Using Confirmo's WooCommerce plugin is a simple way to do so. Installing it is quick and easy, so choose your preferred method below.
 
-> This plugin connects your WooCommerce instance with the 3rd-party service Confirmo. More information about the Confirmo crypto payment gateway can be found at [https://confirmo.net](https://confirmo.net). An integral part of the plugin is the API requests to Confirmo, which are described in more detail in [https://confirmo.net/docs/api-reference/](the Confirmo API documentation).
+> This plugin connects your WooCommerce instance with the 3rd-party service Confirmo. More information about the Confirmo crypto payment gateway can be found at [https://confirmo.net](https://confirmo.net). An integral part of the plugin is the API requests to Confirmo, which are described in more detail in [the Confirmo API documentation](https://confirmo.net/docs/api-reference).
 
 
 ## Installing the plugin
@@ -96,4 +96,4 @@ Settlements (recurrent withdrawals) are free, but bank fees apply.
 
 = Where can I find the Terms & Conditions? =
 
-The most up-to-date Terms & Conditions are available on the Confirmo website in [https://confirmo.net/legal/terms-and-conditions](the Terms & Conditions) section.
+The most up-to-date Terms & Conditions are available on the Confirmo website in [the Terms & Conditions](https://confirmo.net/legal/terms-and-conditions) section.
