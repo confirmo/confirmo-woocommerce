@@ -199,6 +199,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
         class WC_Confirmo_Gateway extends WC_Payment_Gateway
         {
+            protected $api_key;
+            protected $settlement_currency;
+            protected $callback_password;
+
             public function __construct()
             {
                 $this->id = "confirmo";
