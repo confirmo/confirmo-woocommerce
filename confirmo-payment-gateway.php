@@ -565,6 +565,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             private function confirmo_update_order_status($order, $confirmo_status)
             {
                 switch ($confirmo_status) {
+                    case 'prepared':
+                        // An invoice has been prepared. Do nothing.
+                        break;
                     case 'active':
                         $order->update_status('on-hold', __('Payment instructions created, awaiting payment.', 'confirmo-payment-gateway'));
                         break;
