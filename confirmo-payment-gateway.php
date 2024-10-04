@@ -442,6 +442,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $response_data = json_decode($response_body, true);
 
                 if (!isset($response_data['url'])) {
+                    confirmo_add_debug_log($order_id, $response_body, 'process_payment');
                     wc_add_notice(__('Payment error: The Confirmo API response did not contain a url.', 'confirmo-payment-gateway'), 'error');
                     return;
                 }
