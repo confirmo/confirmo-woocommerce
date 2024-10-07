@@ -535,10 +535,10 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
      *
      * @return void
      */
-    public function purgeOldLogs()
+    public static function purgeOldLogs()
     {
-        $table_name = $this->wpdb->prefix . "confirmo_logs";
-        $wpdb = $this->wpdb;
+        global $wpdb;
+        $table_name = $wpdb->prefix . "confirmo_logs";
 
         $wpdb->query(
             $wpdb->prepare(
