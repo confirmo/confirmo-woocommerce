@@ -41,8 +41,6 @@ if (
         $gateway->pluginName = plugin_basename(__FILE__);
         $gateway->run();
 
-        add_action('admin_menu', [$gateway, 'adminMenu']);
-
         // Schedule the log cleanup to run daily
         if (!wp_next_scheduled('confirmo_purge_old_logs_hook')) {
             wp_schedule_event(time(), 'daily', 'confirmo_purge_old_logs_hook');

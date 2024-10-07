@@ -1,5 +1,7 @@
 <?php
 
+use Automattic\WooCommerce\Utilities\FeaturesUtil;
+
 /**
  * WC Confirmo Gateway class - main plugin class that extends default WC Payment Gateway
  *
@@ -15,7 +17,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     protected string $apiKey;
     protected string $settlementCurrency;
     protected string $callbackPassword;
-	protected WC_Confirmo_Loader $loader;
+    protected WC_Confirmo_Loader $loader;
     protected $wpdb;
     public string $pluginName;
     private array $allowedCurrencies = [
@@ -63,9 +65,9 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
      *
      * @return void
      */
-	private function defineHooks(): void
+    private function defineHooks(): void
     {
-        require_once plugin_dir_path(dirname( __FILE__ )) . 'includes/WC_Confirmo_Loader.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/WC_Confirmo_Loader.php';
         $this->loader = new WC_Confirmo_Loader();
 
         $this->loader->addAction('init', [$this, 'addEndpoints']);
@@ -797,7 +799,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         // Check if the required class exists
         if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
             // Declare compatibility for 'cart_checkout_blocks'
-            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+            FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
         }
     }
 

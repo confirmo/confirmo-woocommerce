@@ -6,15 +6,15 @@
 class WC_Confirmo_Loader
 {
 
-	protected array $actions;
+    protected array $actions;
 
-	protected array $filters;
+    protected array $filters;
 
-	public function __construct()
+    public function __construct()
     {
-		$this->actions = [];
-		$this->filters = [];
-	}
+        $this->actions = [];
+        $this->filters = [];
+    }
 
     /**
      * Go through registered actions and filters and register them in WP
@@ -23,14 +23,14 @@ class WC_Confirmo_Loader
      */
     public function run(): void
     {
-		foreach ($this->filters as $hook) {
-			add_filter($hook['hook'], $hook['callback'], $hook['priority'], $hook['accepted_args']);
-		}
+        foreach ($this->filters as $hook) {
+            add_filter($hook['hook'], $hook['callback'], $hook['priority'], $hook['accepted_args']);
+        }
 
-		foreach ($this->actions as $hook) {
-			add_action($hook['hook'], $hook['callback'], $hook['priority'], $hook['accepted_args']);
-		}
-	}
+        foreach ($this->actions as $hook) {
+            add_action($hook['hook'], $hook['callback'], $hook['priority'], $hook['accepted_args']);
+        }
+    }
 
     /**
      * Add action to be registered by helper
@@ -43,8 +43,20 @@ class WC_Confirmo_Loader
      */
     public function addAction(string $hook, callable $callback, int $priority = 10, int $accepted_args = 1): void
     {
-		$this->actions = $this->add($this->actions, $hook, $callback, $priority, $accepted_args);
-	}
+        $this->actions = $this->add($this->actions, $hook, $callback, $priority, $accepted_args);
+    }
+
+    private function add(array $hooks, string $hook, callable $callback, int $priority, int $accepted_args): array
+    {
+        $hooks[] = [
+            'hook' => $hook,
+            'callback' => $callback,
+            'priority' => $priority,
+            'accepted_args' => $accepted_args
+        ];
+
+        return $hooks;
+    }
 
     /**
      * Add filter to be registered by helper
@@ -57,19 +69,7 @@ class WC_Confirmo_Loader
      */
     public function addFilter(string $hook, callable $callback, int $priority = 10, int $accepted_args = 1): void
     {
-		$this->filters = $this->add($this->filters, $hook, $callback, $priority, $accepted_args);
-	}
-
-    private function add(array $hooks, string $hook, callable $callback, int $priority, int $accepted_args): array
-    {
-		$hooks[] = [
-			'hook' => $hook,
-			'callback' => $callback,
-			'priority' => $priority,
-			'accepted_args' => $accepted_args
-        ];
-
-		return $hooks;
-	}
+        $this->filters = $this->add($this->filters, $hook, $callback, $priority, $accepted_args);
+    }
 
 }
