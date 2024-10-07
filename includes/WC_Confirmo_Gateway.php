@@ -256,7 +256,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         echo '<li>' . esc_html__('In your WordPress dashboard, go to WooCommerce – Settings – Payments. Click Confirmo. You will be asked to configure the plugin with information generated in your Confirmo account to connect them.', 'confirmo-payment-gateway') . '</li>';
         echo '</ol>';
 
-
         echo '<h2>' . esc_html(__('Connecting the plugin to your Confirmo account:', 'confirmo-payment-gateway')) . '</h2>';
         echo '<p>' . esc_html(__('Create an account at', 'confirmo-payment-gateway')) . ' <a href="https://confirmo.net">Confirmo.net</a> ' . esc_html(__('and then go to Settings – API Keys – Create API key. You will be required to complete an e-mail verification, after which you will receive the API key. Once you have it, go to WooCommerce – Settings – Payments, and enable Confirmo as a payment method. Paste the API key into the respective field.', 'confirmo-payment-gateway')) . '</p>';
 
@@ -289,7 +288,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             '' => __('Keep it in kind (no conversion)', 'confirmo-payment-gateway'),
         ];
 
-        $current_currency = $this->getWCOption("confirmo", "settlement_currency")();
+        $current_currency = $this->getWCOption("confirmo", "settlement_currency");
 
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Payment Button Generator', 'confirmo-payment-gateway') . '</h1>';
