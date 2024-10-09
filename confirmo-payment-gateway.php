@@ -22,6 +22,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/WC_Confirmo_Activator.php';
 // Hook the activation and deactivation function
 register_activation_hook(__FILE__, [WC_Confirmo_Activator::class, 'activate']);
 register_deactivation_hook(__FILE__, [WC_Confirmo_Activator::class, 'deactivate']);
+register_uninstall_hook(__FILE__, [WC_Confirmo_Activator::class, 'uninstall']);
 
 // Test to see if WooCommerce is active (including network activated).
 $plugin_path = trailingslashit( WP_PLUGIN_DIR ) . 'woocommerce/woocommerce.php';

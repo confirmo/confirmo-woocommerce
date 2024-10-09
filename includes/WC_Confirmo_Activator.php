@@ -68,6 +68,16 @@ class WC_Confirmo_Activator
      */
     public static function deactivate(): void
     {
+
+    }
+
+    /**
+     * Plugin uninstall hook
+     *
+     * @return void
+     */
+    public static function uninstall(): void
+    {
         global $wpdb;
 
         $table_name = $wpdb->prefix . "confirmo_logs";
