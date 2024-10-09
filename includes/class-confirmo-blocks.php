@@ -1,4 +1,5 @@
 <?php
+
 // Define the Confirmo_Blocks class conditionally
 if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
     class Confirmo_Blocks extends Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType {
@@ -15,6 +16,8 @@ if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPa
         }
 
         public function get_payment_method_script_handles() {
+            global $confirmo_version;
+
             wp_register_script(
                 'confirmo-blocks-integration',
                 plugin_dir_url(__FILE__) . 'public/js/confirmo-blocks-integration.js',
@@ -25,7 +28,7 @@ if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPa
                     'wp-html-entities',
                     'wp-i18n',
                 ],
-                null,
+                $confirmo_version,
                 true
             );
             if (function_exists('wp_set_script_translations')) {
@@ -33,8 +36,8 @@ if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPa
             }
             return ['confirmo-blocks-integration'];
         }
-		
-		
+
+
 
         public function get_payment_method_data() {
             return [
