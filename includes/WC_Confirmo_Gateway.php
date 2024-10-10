@@ -10,7 +10,7 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
  * @property string $method_description
  * @property $title
  * @property $description
- * @method get_option(string $string)
+ * @method get_option(string $string, mixed $empty_value = null)
  */
 class WC_Confirmo_Gateway extends WC_Payment_Gateway
 {
@@ -20,6 +20,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     protected WC_Confirmo_Loader $loader;
     protected $wpdb;
     public string $pluginName;
+    private string $apiBaseUrl;
     private array $allowedCurrencies = [
         'BTC',
         'CZK',
@@ -45,6 +46,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $this->apiKey = $this->get_option('api_key');
         $this->settlementCurrency = $this->get_option('settlement_currency');
         $this->callbackPassword = $this->get_option('callback_password');
+        $this->apiBaseUrl = get_site_option('confirmo_base_url');
         // If needed, other initializations can be done here.
     }
 
@@ -87,8 +89,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $this->loader->addAction('wp_enqueue_scripts', [$this, 'enqueueScripts']);
         $this->loader->addAction('woocommerce_email_after_order_table', [$this, 'addUrlToEmails']);
         $this->loader->addAction('woocommerce_admin_order_data_after_billing_address', [$this, 'addUrlToEditOrder']);
-        $this->loader->addAction('wp_ajax_confirmo_custom_payment', [$this, 'customPayment']);
-        $this->loader->addAction('wp_ajax_nopriv_confirmo_custom_payment', [$this, 'customPayment']);
 
         $this->loader->addAction('admin_init', [$this, 'downloadLogs']);
         $this->loader->addAction('admin_post_confirmo_delete_logs', [$this, 'deleteLogs']);
@@ -387,6 +387,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
                 echo '<td>' . (isset($log->order_id) ? esc_html($log->order_id) : 'N/A') . '</td>';
                 echo '<td>' . (isset($log->api_response) ? esc_html($log->api_response) : 'N/A') . '</td>';
                 echo '<td>' . (isset($log->hook) ? esc_html($log->hook) : "N/A") . '</td>';
+                echo '<td>' . (isset($log->version) ? esc_html($log->version) : "N/A") . '</td>';
                 echo '</tr>';
             }
             echo '</tbody>';
@@ -420,52 +421,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         submit_button(__('Save Settings', 'confirmo-payment-gateway'));
         echo '</form>';
         echo '</div>';
-    }
-
-    /**
-     * Create AJAX payment
-     *
-     * @return void
-     */
-    public function customPayment(): void
-    {
-        if (!isset($_POST['currency'])) {
-            wp_send_json_error(__('Error: Currency is missing.', 'confirmo-payment-gateway'));
-        }
-
-        if (!isset($_POST['amount'])) {
-            wp_send_json_error(__('Error: Amount is missing.', 'confirmo-payment-gateway'));
-        }
-
-        $currency = sanitize_text_field(wp_unslash($_POST['currency']));
-        $amount = sanitize_text_field(wp_unslash($_POST['amount']));
-        $api_key = get_option('woocommerce_confirmo_api_key');
-
-        if (empty($api_key)) {
-            wp_send_json_error(__('Error: API key is missing.', 'confirmo-payment-gateway'));
-        }
-
-        $response = $this->createPayment($currency, $amount, $api_key);
-
-        if (is_wp_error($response)) {
-            wp_send_json_error(__('Error: ', 'confirmo-payment-gateway') . $response->get_error_message());
-            return;
-        }
-
-        $response_body = wp_remote_retrieve_body($response);
-        $response_data = json_decode($response_body, true);
-
-        if ($response_data) {
-            $this->addDebugLog('custom-button-payment', wp_json_encode($response_data), 'create_payment');
-        } else {
-            error_log("Missing order_id or response_data");
-        }
-
-        if (isset($response_data['url'])) {
-            wp_send_json_success(['url' => $response_data['url']]);
-        } else {
-            wp_send_json_error(__('Error: Payment URL not received.', 'confirmo-payment-gateway'));
-        }
     }
 
     /**
@@ -574,10 +529,10 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             $handle = fopen('php://output', 'w');
             ob_clean();
 
-            fputcsv($handle, [__('Time', 'confirmo-payment-gateway'), __('Order ID', 'confirmo-payment-gateway'), __('API Response', 'confirmo-payment-gateway')]);
+            fputcsv($handle, [__('Time', 'confirmo-payment-gateway'), __('Order ID', 'confirmo-payment-gateway'), __('API Response', 'confirmo-payment-gateway'), __('Plugin version', 'confirmo-payment-gateway')]);
 
             foreach ($logs as $log) {
-                fputcsv($handle, [$log->time, $log->order_id, $log->api_response]);
+                fputcsv($handle, [$log->time, $log->order_id, $log->api_response, $log->version]);
             }
 
             ob_flush();
@@ -972,7 +927,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $customer_email = $order->get_billing_email();
 
         $api_key = $this->get_option('api_key');
-        $url = 'https://confirmo.net/api/v3/invoices';
+        $url = $this->apiBaseUrl . '/api/v3/invoices';
 
         $notify_url = $this->generateNotifyUrl();
         $return_url = $order->get_checkout_order_received_url();
@@ -1150,7 +1105,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     private function verifyInvoiceStatus($invoice_id)
     {
         $api_key = $this->get_option('api_key');
-        $url = 'https://confirmo.net/api/v3/invoices/' . $invoice_id;
+        $url = $this->apiBaseUrl . '/api/v3/invoices/' . $invoice_id;
 
         $response = wp_remote_get($url, [
             'headers' => [
@@ -1219,13 +1174,15 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
      */
     private function addDebugLog($order_id, string $api_response, string $hook): void
     {
+        global $confirmo_version;
         $table_name = $this->wpdb->prefix . "confirmo_logs";
 
         $this->wpdb->insert($table_name, [
             'time' => current_time('mysql'),
             'order_id' => $order_id,
             'api_response' => $api_response,
-            'hook' => $hook
+            'hook' => $hook,
+            'version' => $confirmo_version
         ]);
     }
 
@@ -1259,7 +1216,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     {
         $notification_url = home_url('confirmo-notification');
         $return_url = wc_get_cart_url();
-        $url = 'https://confirmo.net/api/v3/invoices';
+        $url = $this->apiBaseUrl . '/api/v3/invoices';
 
         $data = [
             'settlement' => ['currency' => $currency],

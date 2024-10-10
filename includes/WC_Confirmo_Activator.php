@@ -21,7 +21,7 @@ class WC_Confirmo_Activator
             'enabled' => 'no',  // Default setting to disabled
             'api_key' => '',    // Default empty API key
             'callback_password' => '',  // Default empty callback password
-            'settlement_currency' => '' // Default to empty or a specific currency code
+            'settlement_currency' => '', // Default to empty or a specific currency code,
         ];
 
         $current_settings = get_option($option_key, []);
@@ -50,6 +50,7 @@ class WC_Confirmo_Activator
             `order_id` INT NOT NULL,
             `api_response` TEXT NOT NULL,
             `hook` VARCHAR(255) NOT NULL,
+            `version` VARCHAR(10) NOT NULL,
             PRIMARY KEY  (`id`),
             KEY `time` (`time` ASC),
             KEY `order_id` (`order_id` ASC)
@@ -59,6 +60,7 @@ class WC_Confirmo_Activator
         dbDelta($sql);
 
         add_option('confirmo_version', $confirmo_version);
+        add_option('confirmo_base_url', 'https://confirmo.net');
     }
 
     /**
