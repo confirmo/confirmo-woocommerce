@@ -6,8 +6,14 @@ if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPa
         private $gateway;
         protected $name = 'confirmo';
 
+        private string $pluginBaseDir;
+
+        public function __construct(string $pluginBaseDir) {
+            $this->pluginBaseDir = $pluginBaseDir;
+        }
+
         public function initialize() {
-            $this->settings = get_option('woocommerce_confirmo_settings', []);
+            $this->settings = get_option('confirmo_gate_config_options', []);
             $this->gateway = new WC_Confirmo_Gateway();
         }
 
@@ -20,7 +26,7 @@ if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPa
 
             wp_register_script(
                 'confirmo-blocks-integration',
-                plugin_dir_url(__FILE__) . 'public/js/confirmo-blocks-integration.js',
+                plugins_url('public/js/confirmo-blocks-integration.js', $this->pluginBaseDir),
                 [
                     'wc-blocks-registry',
                     'wc-settings',
@@ -42,6 +48,7 @@ if (class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPa
         public function get_payment_method_data() {
             return [
                 'title' => $this->gateway->title,
+                'description' => $this->gateway->description,
             ];
         }
     }

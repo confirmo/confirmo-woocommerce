@@ -16,12 +16,20 @@ class WC_Confirmo_Activator
         global $wpdb;
         global $confirmo_version;
 
-        $option_key = 'woocommerce_confirmo_settings';
+        $option_key = 'confirmo_gate_config_options';
         $default_settings = [
             'enabled' => 'no',  // Default setting to disabled
             'api_key' => '',    // Default empty API key
             'callback_password' => '',  // Default empty callback password
             'settlement_currency' => '', // Default to empty or a specific currency code,
+            'custom_states' => [
+                'prepared' => 'on-hold',
+                'active' => 'on-hold',
+                'confirming' => 'on-hold',
+                'paid' => 'complete',
+                'expired' => 'failed',
+                'error' => 'failed',
+            ]
         ];
 
         $current_settings = get_option($option_key, []);

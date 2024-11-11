@@ -10,7 +10,6 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
  * @property string $method_description
  * @property $title
  * @property $description
- * @method get_option(string $string, mixed $empty_value = null)
  */
 class WC_Confirmo_Gateway extends WC_Payment_Gateway
 {
@@ -20,6 +19,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     protected WC_Confirmo_Loader $loader;
     protected $wpdb;
     public string $pluginName;
+    public string $pluginBaseDir;
     private string $apiBaseUrl;
     private array $allowedCurrencies = [
         'BTC',
@@ -33,6 +33,22 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         'USDT',
         ''
     ];
+    private array $orderStatuses = [
+        'pending',
+        'on-hold',
+        'processing',
+        'completed',
+        'failed',
+        'cancelled'
+    ];
+    private array $confirmoStatuses = [
+        'prepared' => 'Prepared',
+        'active' => 'Active',
+        'confirming' => 'Confirming',
+        'paid' => 'Paid',
+        'expired' => 'Expired',
+        'error' => 'Error'
+    ];
 
     public function __construct()
     {
@@ -42,11 +58,11 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $this->method_title = __("Confirmo", 'confirmo-payment-gateway');
         $this->method_description = __("Settings have been moved. Please configure the gateway ", 'confirmo-payment-gateway') . "<a href='" . admin_url('admin.php?page=confirmo-payment-gate-config') . "'>" . __("here", 'confirmo-payment-gateway') . "</a>.";
         $this->title = __("Confirmo", 'confirmo-payment-gateway');
-        $this->description = $this->get_option('description');
-        $this->apiKey = $this->get_option('api_key');
-        $this->settlementCurrency = $this->get_option('settlement_currency');
-        $this->callbackPassword = $this->get_option('callback_password');
-        $this->apiBaseUrl = get_site_option('confirmo_base_url');
+        $this->description = get_option('confirmo_gate_config_options')['description'];
+        $this->apiKey = get_option('confirmo_gate_config_options')['api_key'];
+        $this->settlementCurrency = get_option('confirmo_gate_config_options')['settlement_currency'];
+        $this->callbackPassword = get_option('confirmo_gate_config_options')['callback_password'];
+        $this->apiBaseUrl = get_option('confirmo_base_url');
         // If needed, other initializations can be done here.
     }
 
@@ -70,11 +86,12 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     private function defineHooks(): void
     {
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/WC_Confirmo_Loader.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/WC_Confirmo_Settings.php';
         $this->loader = new WC_Confirmo_Loader();
 
         $this->loader->addAction('init', [$this, 'addEndpoints']);
 
-        $this->loader->addAction('admin_init', [$this, 'registerPaymentGateConfigSettings']);
+        $this->loader->addAction('admin_init', [WC_Confirmo_Settings::class, 'register']);
 
         $this->loader->addAction('admin_menu', [$this, 'adminMenu']);
 
@@ -87,7 +104,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $this->loader->addAction('before_woocommerce_init', [$this, 'declareCartCheckoutBlocksCompatibility']);
         $this->loader->addAction('woocommerce_blocks_loaded', [$this, 'registerBlockPaymentMethodType']);
         $this->loader->addAction('wp_enqueue_scripts', [$this, 'enqueueScripts']);
-        $this->loader->addAction('woocommerce_email_after_order_table', [$this, 'addUrlToEmails']);
+        $this->loader->addAction('woocommerce_email_after_order_table', [$this, 'addUrlToEmails'], 10, 4);
         $this->loader->addAction('woocommerce_admin_order_data_after_billing_address', [$this, 'addUrlToEditOrder']);
 
         $this->loader->addAction('admin_init', [$this, 'downloadLogs']);
@@ -113,110 +130,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         if (get_site_option('confirmo_version') != $confirmo_version) {
             WC_Confirmo_Activator::activate();
         }
-    }
-
-    /**
-     * Validate submitted settings options
-     *
-     * @param array $input
-     * @return array
-     */
-    public function validateConfigOptions(array $input): array
-    {
-        $new_input = [];
-        $option_key = 'woocommerce_confirmo_settings';
-        $settings = get_option($option_key, []);
-
-        if (isset($input['description'])) {
-            $description = sanitize_text_field($input['description']);
-            $new_input['description'] = $description;
-            $this->setWCOption("confirmo", "description", $description);
-        }
-
-        if (isset($input['enabled'])) {
-            $new_input['enabled'] = $input['enabled'] === 'on' ? 'yes' : 'no';
-            $this->setWCOption("confirmo", "enabled", $new_input['enabled']);
-        }
-
-        if (isset($input['api_key'])) {
-            $api_key = sanitize_text_field($input['api_key']);
-            if (strlen($api_key) == 64 && ctype_alnum($api_key)) {
-                $new_input['api_key'] = $api_key;
-                $this->setWCOption("confirmo", "api_key", $new_input['api_key']);
-            } else {
-                $new_input['api_key'] = $settings['api_key'] ?? '';
-                add_settings_error('api_key', 'api_key_error', __('API Key must be exactly 64 alphanumeric characters', 'confirmo-payment-gateway'), 'error');
-            }
-        }
-
-        if (isset($input['callback_password'])) {
-            $callback_password = sanitize_text_field($input['callback_password']);
-            if (strlen($callback_password) == 16 && ctype_alnum($callback_password)) {
-                $new_input['callback_password'] = $callback_password;
-                $this->setWCOption("confirmo", "callback_password", $new_input['callback_password']);
-            } else {
-                $new_input['callback_password'] = $settings['callback_password'] ?? '';
-                add_settings_error('callback_password', 'callback_password_error', __('Callback Password must be 16 alphanumeric characters', 'confirmo-payment-gateway'), 'error');
-            }
-        }
-
-        if (isset($input['settlement_currency'])) {
-            $settlement_currency = $input['settlement_currency']; //This is a number, 0-8..
-            if ($this->allowedCurrencies[$settlement_currency]) {
-                $this->setWCOption("confirmo", "settlement_currency", $this->allowedCurrencies[$settlement_currency]);
-                $new_input['settlement_currency'] = $this->allowedCurrencies[$settlement_currency];
-            } else {
-                $new_input['settlement_currency'] = $settings['settlement_currency'] ?? '';
-                add_settings_error('settlement_currency', 'settlement_currency_error', __('Invalid settlement currency selected.', 'confirmo-payment-gateway'), 'error');
-            }
-        }
-
-        return $new_input;
-    }
-
-    public function configSectionCallback(): void
-    {
-        echo '<p>' . esc_html__('Adjust the settings for Confirmo payment gateway.', 'confirmo-payment-gateway') . '</p>';
-    }
-
-    public function configEnabledCallback(): void
-    {
-        $options = get_option('confirmo_gate_config_options');
-        $checked = isset($options['enabled']) && $options['enabled'] ? 'checked' : '';
-        echo '<input type="checkbox" id="enabled" name="confirmo_gate_config_options[enabled]" ' . esc_attr($checked) . '>';
-    }
-
-    public function configApiKeyCallback(): void
-    {
-        $options = get_option('confirmo_gate_config_options');
-        $value = isset($options['api_key']) ? esc_attr($options['api_key']) : '';
-        echo('<input type="text" id="api_key" name="confirmo_gate_config_options[api_key]" value="' . esc_attr($value) . '" size="70" maxlength="64" required>');
-    }
-
-    public function configCallbackPasswordCallback(): void
-    {
-        $options = get_option('confirmo_gate_config_options');
-        $value = isset($options['callback_password']) ? esc_attr($options['callback_password']) : '';
-        echo('<input type="text" id="callback_password" name="confirmo_gate_config_options[callback_password]" value="' . esc_attr($value) . '" required>');
-    }
-
-    public function configSettlementCurrencyCallback(): void
-    {
-        $options = get_option('confirmo_gate_config_options');
-        $current_value = $options['settlement_currency'] ?? 'test';
-        echo '<select id="settlement_currency" name="confirmo_gate_config_options[settlement_currency]">';
-        foreach ($this->allowedCurrencies as $key => $label) {
-            $selected = ($label == $current_value) ? 'selected' : '';
-            echo('<option value="' . esc_attr($key) . '" ' . esc_attr($selected) . '>' . esc_html($label) . '</option>');
-        }
-        echo '</select>';
-    }
-
-    public function configDescriptionCallback(): void
-    {
-        $options = get_option('confirmo_gate_config_options');
-        $value = isset($options['description']) ? esc_textarea($options['description']) : '';
-        echo '<textarea id="description" name="confirmo_gate_config_options[description]" rows="5" cols="50">' . esc_textarea($value) . '</textarea>';
     }
 
     /**
@@ -288,7 +201,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             '' => __('Keep it in kind (no conversion)', 'confirmo-payment-gateway'),
         ];
 
-        $current_currency = $this->getWCOption("confirmo", "settlement_currency");
+        $current_currency = get_option('confirmo_gate_config_options')['settlement_currency'];
 
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__('Payment Button Generator', 'confirmo-payment-gateway') . '</h1>';
@@ -379,7 +292,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
 
         if (!empty($logs)) {
             echo '<table class="widefat fixed" cellspacing="0">';
-            echo '<thead><tr><th>' . esc_html(__('Time', 'confirmo-payment-gateway')) . '</th><th>' . esc_html(__('Order ID', 'confirmo-payment-gateway')) . '</th><th>' . esc_html(__('API Response', 'confirmo-payment-gateway')) . '</th><th>' . esc_html(__('Redirect URL', 'confirmo-payment-gateway')) . '</th></thead>';
+            echo '<thead><tr><th>' . esc_html(__('Time', 'confirmo-payment-gateway')) . '</th><th>' . esc_html(__('Order ID', 'confirmo-payment-gateway')) . '</th><th>' . esc_html(__('API Response', 'confirmo-payment-gateway')) . '</th><th>' . esc_html(__('Redirect URL', 'confirmo-payment-gateway')) . '</th><th>' . esc_html(__('Version', 'confirmo-payment-gateway')) . '</th></thead>';
             echo '<tbody>';
             foreach ($logs as $log) {
                 echo '<tr>';
@@ -565,63 +478,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     }
 
     /**
-     * Registers plugin settings
-     *
-     * @return void
-     */
-    public function registerPaymentGateConfigSettings(): void
-    {
-        register_setting('confirmo-payment-gate-config', 'confirmo_gate_config_options', [$this, 'validateConfigOptions']);
-
-        add_settings_section(
-            'confirmo_gate_config_main',
-            __('Main Settings', 'confirmo-payment-gateway'),
-            [$this, 'configSectionCallback'],
-            'confirmo-payment-gate-config'
-        );
-
-        add_settings_field(
-            'enabled',
-            __('Enable/Disable', 'confirmo-payment-gateway'),
-            [$this, 'configEnabledCallback'],
-            'confirmo-payment-gate-config',
-            'confirmo_gate_config_main'
-        );
-
-        add_settings_field(
-            'api_key',
-            __('API Key', 'confirmo-payment-gateway'),
-            [$this, 'configApiKeyCallback'],
-            'confirmo-payment-gate-config',
-            'confirmo_gate_config_main'
-        );
-
-        add_settings_field(
-            'callback_password',
-            __('Callback Password', 'confirmo-payment-gateway'),
-            [$this, 'configCallbackPasswordCallback'],
-            'confirmo-payment-gate-config',
-            'confirmo_gate_config_main'
-        );
-
-        add_settings_field(
-            'settlement_currency',
-            __('Settlement Currency', 'confirmo-payment-gateway'),
-            [$this, 'configSettlementCurrencyCallback'],
-            'confirmo-payment-gate-config',
-            'confirmo_gate_config_main'
-        );
-
-        add_settings_field(
-            'description',
-            __('Description on checkout page', 'confirmo-payment-gateway'),
-            [$this, 'configDescriptionCallback'],
-            'confirmo-payment-gate-config',
-            'confirmo_gate_config_main'
-        );
-    }
-
-    /**
      * Registers plugin admin WP menu
      *
      * @return void
@@ -710,9 +566,9 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     {
         global $confirmo_version;
 
-        wp_enqueue_script('confirmo-custom-script', plugins_url('public/js/confirmo-crypto-gateway.js', __FILE__), ['jquery'], $confirmo_version, true);
+        wp_enqueue_script('confirmo-custom-script', plugins_url('public/js/confirmo-crypto-gateway.js', $this->pluginBaseDir), ['jquery'], $confirmo_version, true);
 
-        $image_url = plugins_url('public/img/confirmo.png', __FILE__);
+        $image_url = plugins_url('public/img/confirmo.png', $this->pluginBaseDir);
         wp_localize_script('confirmo-custom-script', 'confirmoParams', [
             'imageUrl' => $image_url
         ]);
@@ -738,7 +594,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             'woocommerce_blocks_payment_method_type_registration',
             function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
                 // Register an instance of Confirmo_Blocks
-                $payment_method_registry->register(new Confirmo_Blocks);
+                $payment_method_registry->register(new Confirmo_Blocks($this->pluginBaseDir));
             }
         );
     }
@@ -863,16 +719,16 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             if (!empty($this->callbackPassword)) {
                 $signature = hash('sha256', $json . $this->callbackPassword);
                 if (!isset($_SERVER['HTTP_BP_SIGNATURE']) || $_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
-                    error_log("Confirmo: Signature validation failed!");
+                    $this->addDebugLog(null, "Confirmo: Signature validation failed!", 'handleNotification');
                     wp_die('Invalid signature', '', ['response' => 403]);
                 }
             } else {
-                error_log("Confirmo: No callback password set, proceeding without validation.");
+                $this->addDebugLog(null, "Confirmo: No callback password set, proceeding without validation.", 'handleNotification');
             }
 
             $data = json_decode($json, true);
             if (!is_array($data)) {
-                error_log("Confirmo: Invalid JSON data received.");
+                $this->addDebugLog(null, "Confirmo: Invalid JSON data received.", 'handleNotification');
                 wp_die('Invalid data', '', ['response' => 400]);
             }
 
@@ -882,7 +738,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             $order = wc_get_order($order_id);
 
             if (!$order) {
-                error_log("Confirmo: Failed to retrieve order with reference: " . $order_id);
+                $this->addDebugLog($order_id, "Confirmo: Failed to retrieve order with reference: " . $order_id, 'handleNotification');
                 wp_die('Order not found', '', ['response' => 404]);
             }
 
@@ -894,7 +750,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
                 $this->updateOrderStatus($order, strtolower($verified_status));
                 wp_die('OK', '', ['response' => 200]);
             } else {
-                error_log("Confirmo: Error fetching invoice status for order: " . $order_id);
+                $this->addDebugLog($order_id, "Confirmo: Error fetching invoice status for order: " . $order_id, 'handleNotification');
                 wp_die('Error fetching invoice status', '', ['response' => 409]);
             }
         }
@@ -926,21 +782,19 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $product_description = rtrim($product_description, ' + ');
         $customer_email = $order->get_billing_email();
 
-        $api_key = $this->get_option('api_key');
         $url = $this->apiBaseUrl . '/api/v3/invoices';
 
         $notify_url = $this->generateNotifyUrl();
         $return_url = $order->get_checkout_order_received_url();
-        $settlement_currency = $this->get_option('settlement_currency');
 
         $headers = [
-            'Authorization' => 'Bearer ' . $api_key,
+            'Authorization' => 'Bearer ' . $this->apiKey,
             'Content-Type' => 'application/json',
             'X-Payment-Module' => 'WooCommerce'
         ];
 
         $body = [
-            'settlement' => ['currency' => $settlement_currency],
+            'settlement' => ['currency' => $this->settlementCurrency],
             'product' => ['name' => $product_name, 'description' => $product_description],
             'invoice' => ['currencyFrom' => $order_currency, 'amount' => $total_amount],
             'notificationUrl' => $notify_url,
@@ -1050,30 +904,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         ];
     }
 
-    private function setWCOption(string $gateway_id, string $option_key, $new_value)
-    {
-        $options = get_option('woocommerce_' . $gateway_id . '_settings');
-
-        // If the options are not an array, initialize it
-        if (!is_array($options)) {
-            $options = [];
-        }
-
-        // Set the new option key and value
-        $options[$option_key] = $new_value;
-
-        // Update the WooCommerce settings for the gateway
-        update_option('woocommerce_' . $gateway_id . '_settings', $options);
-    }
-
-    private function getWCOption(string $gateway_id, string $option_key)
-    {
-        $options = get_option('woocommerce_' . $gateway_id . '_settings');
-        if (is_array($options) && isset($options[$option_key])) {
-            return $options[$option_key];
-        }
-    }
-
     /**
      * Generate URL to handle incoming invoice notifications
      *
@@ -1104,7 +934,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
      */
     private function verifyInvoiceStatus($invoice_id)
     {
-        $api_key = $this->get_option('api_key');
+        $api_key = $this->apiKey;
         $url = $this->apiBaseUrl . '/api/v3/invoices/' . $invoice_id;
 
         $response = wp_remote_get($url, [
@@ -1138,27 +968,41 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
      */
     private function updateOrderStatus($order, string $confirmo_status): void
     {
+        $options = get_option('confirmo_gate_config_options');
+        $values = $options['custom_states'];
+
         switch ($confirmo_status) {
             case 'prepared':
-                $order->update_status('on-hold', __('Payment instructions created, awaiting payment.', 'confirmo-payment-gateway'));
+                $message = __('Payment instructions created, awaiting payment.', 'confirmo-payment-gateway');
                 break;
             case 'active':
-                $order->update_status('on-hold', __('Client selects crypto payment method, awaiting payment.', 'confirmo-payment-gateway'));
+                $message = __('Client selects crypto payment method, awaiting payment.', 'confirmo-payment-gateway');
                 break;
             case 'confirming':
-                $order->update_status('on-hold', __('Payment received, awaiting confirmations', 'confirmo-payment-gateway'));
+                $message = __('Payment received, awaiting confirmations', 'confirmo-payment-gateway');
                 break;
             case 'paid':
-                $order->payment_complete();
+                $message = __('Payment confirmed, letting woocommerce decide whether to complete order or set to processing', 'confirmo-payment-gateway');
                 break;
             case 'expired':
-                $order->update_status('failed', __('Payment expired or insufficient amount', 'confirmo-payment-gateway'));
+                $message =  __('Payment expired or insufficient amount', 'confirmo-payment-gateway');
                 break;
             case 'error':
-                $order->update_status('failed', __('Payment confirmation failed', 'confirmo-payment-gateway'));
+                $message = __('Payment confirmation failed', 'confirmo-payment-gateway');
                 break;
             default:
                 $this->addDebugLog($order->get_id(), "Received unknown status: " . $confirmo_status, 'order_status_update');
+                return;
+        }
+
+        if ($values[$confirmo_status] === 'complete' || $values[$confirmo_status] === 'processing') {
+            $order->payment_complete();
+        } else {
+            $changed = $order->update_status($values[$confirmo_status], $message);
+
+            if (!$changed) {
+                $this->addDebugLog($order->get_id(), __('Order update status failed', 'confirmo-payment-gateway'), 'order_status_update');
+            }
         }
 
         $this->addDebugLog($order->get_id(), "Order status updated to: " . $order->get_status() . " based on Confirmo status: " . $confirmo_status, 'order_status_update');
