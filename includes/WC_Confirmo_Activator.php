@@ -18,15 +18,16 @@ class WC_Confirmo_Activator
 
         $option_key = 'confirmo_gate_config_options';
         $default_settings = [
-            'enabled' => 'no',  // Default setting to disabled
+            'enabled' => 'yes',  // Default setting to disabled
             'api_key' => '',    // Default empty API key
             'callback_password' => '',  // Default empty callback password
-            'settlement_currency' => '', // Default to empty or a specific currency code,
+            'settlement_currency' => 'USDT', // Default to empty or a specific currency code,
+            'description' => '',
             'custom_states' => [
                 'prepared' => 'on-hold',
                 'active' => 'on-hold',
                 'confirming' => 'on-hold',
-                'paid' => 'complete',
+                'paid' => 'completed',
                 'expired' => 'failed',
                 'error' => 'failed',
             ]
@@ -89,6 +90,8 @@ class WC_Confirmo_Activator
     public static function uninstall(): void
     {
         global $wpdb;
+
+        delete_option('confirmo_gate_config_options');
 
         $table_name = $wpdb->prefix . "confirmo_logs";
         $wpdb->query(

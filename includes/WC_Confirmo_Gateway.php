@@ -14,26 +14,22 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
 class WC_Confirmo_Gateway extends WC_Payment_Gateway
 {
     protected string $apiKey;
-    protected string $settlementCurrency;
+    protected ?string $settlementCurrency;
     protected string $callbackPassword;
     protected WC_Confirmo_Loader $loader;
     protected $wpdb;
     public string $pluginName;
     public string $pluginBaseDir;
     private string $apiBaseUrl;
-    private array $allowedCurrencies = [
-        'BTC',
-        'CZK',
-        'EUR',
-        'GBP',
-        'HUF',
-        'PLN',
-        'USD',
-        'USDC',
-        'USDT',
-        ''
+    public static array $allowedCurrencies = [
+        'USDT' => 'USDT',
+        'USDC' => 'USDC',
+        'EUR' => 'EUR',
+        'USD' => 'USD',
+        'CZK' => 'CZK',
+        null => 'Customer Payment Currency'
     ];
-    private array $orderStatuses = [
+    public static array $orderStatuses = [
         'pending',
         'on-hold',
         'processing',
@@ -41,7 +37,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         'failed',
         'cancelled'
     ];
-    private array $confirmoStatuses = [
+    public static array $confirmoStatuses = [
         'prepared' => 'Prepared',
         'active' => 'Active',
         'confirming' => 'Confirming',
@@ -188,19 +184,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
      */
     public function generatorPageContent(): void
     {
-        $currency_options = [
-            'BTC' => 'BTC',
-            'CZK' => 'CZK',
-            'EUR' => 'EUR',
-            'GBP' => 'GBP',
-            'HUF' => 'HUF',
-            'PLN' => 'PLN',
-            'USD' => 'USD',
-            'USDC' => 'USDC',
-            'USDT' => 'USDT',
-            '' => __('Keep it in kind (no conversion)', 'confirmo-payment-gateway'),
-        ];
-
         $current_currency = get_option('confirmo_gate_config_options')['settlement_currency'];
 
         echo '<div class="wrap">';
@@ -212,8 +195,8 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         echo '<th scope="row">' . esc_html(__('Currency', 'confirmo-payment-gateway')) . '</th>';
         echo '<td>';
         echo '<select name="confirmo_currency" required>';
-        foreach ($currency_options as $value => $label) {
-            echo '<option value="' . esc_attr($value) . ' ' . selected($current_currency, $value) . '>' . esc_html($label) . '</option>';
+        foreach (self::$allowedCurrencies as $value => $label) {
+            echo '<option value="' . esc_attr($value) . '" ' . selected($current_currency, $value) . '>' . esc_html($label) . '</option>';
         }
         echo '</select>';
         echo '</td>';
@@ -792,6 +775,10 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             'Content-Type' => 'application/json',
             'X-Payment-Module' => 'WooCommerce'
         ];
+
+        if ($this->settlementCurrency === 'Customer Payment Currency') {
+            $this->settlementCurrency = null;
+        }
 
         $body = [
             'settlement' => ['currency' => $this->settlementCurrency],
