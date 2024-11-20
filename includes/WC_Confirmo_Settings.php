@@ -155,7 +155,8 @@ class WC_Confirmo_Settings
     public static function configSettlementCurrencyCallback(): void
     {
         $options = get_option('confirmo_gate_config_options');
-        $current_value = $options['settlement_currency'] ?? 'test';
+        $current_value = $options['settlement_currency'] ?? '';
+        echo '<p style="font-size: 13px; margin-bottom: 10px;">' . esc_html__('The currency in which funds will be credited and held in your account.', 'confirmo-payment-gateway') . '</p>';
         echo '<select id="settlement_currency" name="confirmo_gate_config_options[settlement_currency]">';
         foreach (WC_Confirmo_Gateway::$allowedCurrencies as $key => $label) {
             $selected = ($label == $current_value) ? 'selected' : '';
@@ -163,8 +164,7 @@ class WC_Confirmo_Settings
         }
         echo '</select>';
 
-        echo '<p style="font-size: 13px;">' . esc_html__('The currency in which funds will be credited and held in your account.', 'confirmo-payment-gateway') . '</p>';
-        echo '<p style="font-size: 13px;">' . esc_html__('If you select "Customer Payment Currency" all payments will be retained in the original currency used by the customer. You will need to withdraw funds in each of these specific currencies separately.', 'confirmo-payment-gateway') . '</p>';
+        echo '<p style="font-size: 13px;max-width: 500px; margin-top: 10px;">' . esc_html__('The currency in which funds will be credited and held in your account. If you select  \'Crypto Settlement (In Kind),\' all payments will be retained in the cryptocurrency used by the customer during checkout (e.g., BTC, ETH). Withdrawals will always be made in the settlement currency, whether fiat or cryptocurrency. It is not possible to exchange or convert settlement currencies for withdrawals. Funds must be withdrawn in the same currency in which they are settled.', 'confirmo-payment-gateway') . '</p>';
     }
 
     public static function configDescriptionCallback(): void

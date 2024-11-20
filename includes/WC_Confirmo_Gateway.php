@@ -27,7 +27,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         'EUR' => 'EUR',
         'USD' => 'USD',
         'CZK' => 'CZK',
-        null => 'Customer Payment Currency'
+        null => 'Crypto Settlement (In Kind)'
     ];
     public static array $orderStatuses = [
         'pending',
@@ -776,7 +776,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             'X-Payment-Module' => 'WooCommerce'
         ];
 
-        if ($this->settlementCurrency === 'Customer Payment Currency') {
+        if ($this->settlementCurrency === 'Crypto Settlement (In Kind)') {
             $this->settlementCurrency = null;
         }
 
