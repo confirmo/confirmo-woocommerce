@@ -13,21 +13,21 @@ class WC_Confirmo_Settings
 
         add_settings_section(
             'confirmo_gate_config_main',
-            __('Main Settings', 'confirmo-payment-gateway'),
+            __('Main Settings', 'confirmo-woocommerce'),
             [self::class, 'configSectionCallback'],
             'confirmo-payment-gate-config'
         );
 
         add_settings_section(
             'confirmo_gate_config_advanced',
-            __('Advanced Settings', 'confirmo-payment-gateway'),
+            __('Advanced Settings', 'confirmo-woocommerce'),
             [self::class, 'configAdvancedCallback'],
             'confirmo-payment-gate-config'
         );
 
         add_settings_field(
             'api_key',
-            __('API Key', 'confirmo-payment-gateway'),
+            __('API Key', 'confirmo-woocommerce'),
             [self::class, 'configApiKeyCallback'],
             'confirmo-payment-gate-config',
             'confirmo_gate_config_main'
@@ -35,7 +35,7 @@ class WC_Confirmo_Settings
 
         add_settings_field(
             'callback_password',
-            __('Callback Password', 'confirmo-payment-gateway'),
+            __('Callback Password', 'confirmo-woocommerce'),
             [self::class, 'configCallbackPasswordCallback'],
             'confirmo-payment-gate-config',
             'confirmo_gate_config_main'
@@ -43,7 +43,7 @@ class WC_Confirmo_Settings
 
         add_settings_field(
             'settlement_currency',
-            __('Settlement Currency', 'confirmo-payment-gateway'),
+            __('Settlement Currency', 'confirmo-woocommerce'),
             [self::class, 'configSettlementCurrencyCallback'],
             'confirmo-payment-gate-config',
             'confirmo_gate_config_main'
@@ -51,7 +51,7 @@ class WC_Confirmo_Settings
 
         add_settings_field(
             'description',
-            __('Description on checkout page', 'confirmo-payment-gateway'),
+            __('Description on checkout page', 'confirmo-woocommerce'),
             [self::class, 'configDescriptionCallback'],
             'confirmo-payment-gate-config',
             'confirmo_gate_config_main'
@@ -68,12 +68,12 @@ class WC_Confirmo_Settings
 
     public static function configSectionCallback(): void
     {
-        echo '<p>' . esc_html__('Adjust the settings for Confirmo payment gateway. For detailed installation guidance, refer to the ', 'confirmo-payment-gateway') . '<a href="https://confirmo.net/blog/how-to-accept-crypto-with-woocommerce/" target="_blank">' . esc_html__('Confirmo installation guide', 'confirmo-payment-gateway') . '</a></p>';
+        echo '<p>' . esc_html__('Adjust the settings for Confirmo payment gateway. For detailed installation guidance, refer to the ', 'confirmo-woocommerce') . '<a href="https://confirmo.net/blog/how-to-accept-crypto-with-woocommerce/" target="_blank">' . esc_html__('Confirmo installation guide', 'confirmo-woocommerce') . '</a></p>';
     }
 
     public static function configAdvancedCallback(): void
     {
-        echo '<p>' . esc_html__('Here you can adjust order status pairing to Confirmo payment status. For more detailed information about each Confirmo order status, ', 'confirmo-payment-gateway') . '<a href="#" id="toggle-status-description">' .  esc_html__('click here', 'confirmo-payment-gateway') . '</a></p>';
+        echo '<p>' . esc_html__('Here you can adjust order status pairing to Confirmo payment status. For more detailed information about each Confirmo order status, ', 'confirmo-woocommerce') . '<a href="#" id="toggle-status-description">' .  esc_html__('click here', 'confirmo-woocommerce') . '</a></p>';
 
         echo '<script>
                 document.getElementById(\'toggle-status-description\').addEventListener(\'click\', e => {
@@ -129,9 +129,9 @@ class WC_Confirmo_Settings
         echo '<div id="confirmo-statuses-description" style="display: none;">';
 
         foreach ($statuses as $status) {
-            echo '<p><strong>' . esc_html__($status['status'], 'confirmo-payment-gateway') . '</strong><br>';
-            echo esc_html__($status['desc'], 'confirmo-payment-gateway');
-            echo '<br><strong>' . esc_html__($status['next_label'], 'confirmo-payment-gateway') . '</strong> ' . esc_html__($status['next_value'], 'confirmo-payment-gateway');
+            echo '<p><strong>' . esc_html($status['status'], 'confirmo-woocommerce') . '</strong><br>';
+            echo esc_html($status['desc'], 'confirmo-woocommerce');
+            echo '<br><strong>' . esc_html($status['next_label'], 'confirmo-woocommerce') . '</strong> ' . esc_html($status['next_value'], 'confirmo-woocommerce');
             echo '</p>';
         }
 
@@ -156,7 +156,7 @@ class WC_Confirmo_Settings
     {
         $options = get_option('confirmo_gate_config_options');
         $current_value = $options['settlement_currency'] ?? '';
-        echo '<p style="font-size: 13px; margin-bottom: 10px;">' . esc_html__('The currency in which funds will be credited and held in your account.', 'confirmo-payment-gateway') . '</p>';
+        echo '<p style="font-size: 13px; margin-bottom: 10px;">' . esc_html__('The currency in which funds will be credited and held in your account.', 'confirmo-woocommerce') . '</p>';
         echo '<select id="settlement_currency" name="confirmo_gate_config_options[settlement_currency]">';
         foreach (WC_Confirmo_Gateway::$allowedCurrencies as $key => $label) {
             $selected = ($label == $current_value) ? 'selected' : '';
@@ -164,7 +164,7 @@ class WC_Confirmo_Settings
         }
         echo '</select>';
 
-        echo '<p style="font-size: 13px;max-width: 500px; margin-top: 10px;">' . esc_html__('The currency in which funds will be credited and held in your account. If you select  \'Crypto Settlement (In Kind),\' all payments will be retained in the cryptocurrency used by the customer during checkout (e.g., BTC, ETH). Withdrawals will always be made in the settlement currency, whether fiat or cryptocurrency. It is not possible to exchange or convert settlement currencies for withdrawals. Funds must be withdrawn in the same currency in which they are settled.', 'confirmo-payment-gateway') . '</p>';
+        echo '<p style="font-size: 13px;max-width: 500px; margin-top: 10px;">' . esc_html__('The currency in which funds will be credited and held in your account. If you select  \'Crypto Settlement (In Kind),\' all payments will be retained in the cryptocurrency used by the customer during checkout (e.g., BTC, ETH). Withdrawals will always be made in the settlement currency, whether fiat or cryptocurrency. It is not possible to exchange or convert settlement currencies for withdrawals. Funds must be withdrawn in the same currency in which they are settled.', 'confirmo-woocommerce') . '</p>';
     }
 
     public static function configDescriptionCallback(): void
@@ -192,7 +192,7 @@ class WC_Confirmo_Settings
         foreach (WC_Confirmo_Gateway::$confirmoStatuses as $key => $label) {
             echo '<tr>';
             echo '<td><label>' . esc_html($label) . '</label></td>';
-            echo '<td><select id="custom_states_' . $key . '" name="confirmo_gate_config_options[custom_states_' . $key . ']">';
+            echo '<td><select id="custom_states_' . esc_attr($key) . '" name="confirmo_gate_config_options[custom_states_' . esc_attr($key) . ']">';
 
             foreach (WC_Confirmo_Gateway::$orderStatuses as $status) {
                 $selected = ($status === $values[$key]) ? 'selected' : '';
@@ -227,7 +227,7 @@ class WC_Confirmo_Settings
                 $new_input['api_key'] = $api_key;
             } else {
                 $new_input['api_key'] = $settings['api_key'] ?? '';
-                add_settings_error('api_key', 'api_key_error', __('API Key must be exactly 64 alphanumeric characters', 'confirmo-payment-gateway'), 'error');
+                add_settings_error('api_key', 'api_key_error', __('API Key must be exactly 64 alphanumeric characters', 'confirmo-woocommerce'), 'error');
             }
         }
 
@@ -238,7 +238,7 @@ class WC_Confirmo_Settings
                 $new_input['callback_password'] = $callback_password;
             } else {
                 $new_input['callback_password'] = $settings['callback_password'] ?? '';
-                add_settings_error('callback_password', 'callback_password_error', __('Callback Password must be 16 alphanumeric characters', 'confirmo-payment-gateway'), 'error');
+                add_settings_error('callback_password', 'callback_password_error', __('Callback Password must be 16 alphanumeric characters', 'confirmo-woocommerce'), 'error');
             }
         }
 
@@ -248,7 +248,7 @@ class WC_Confirmo_Settings
                 $new_input['settlement_currency'] = WC_Confirmo_Gateway::$allowedCurrencies[$settlement_currency];
             } else {
                 $new_input['settlement_currency'] = $settings['settlement_currency'] ?? '';
-                add_settings_error('settlement_currency', 'settlement_currency_error', __('Invalid settlement currency selected.', 'confirmo-payment-gateway'), 'error');
+                add_settings_error('settlement_currency', 'settlement_currency_error', __('Invalid settlement currency selected.', 'confirmo-woocommerce'), 'error');
             }
         }
 
