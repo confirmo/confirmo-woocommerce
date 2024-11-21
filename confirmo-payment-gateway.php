@@ -6,7 +6,7 @@
 * Requires PHP: 7.4
 * Author: Confirmo.net
 * Author URI: https://confirmo.net
-* Text Domain: confirmo-woocommerce
+* Text Domain: confirmo-for-woocommerce
 * Domain Path: /languages
 * Requires Plugins: woocommerce
 * License: GPLv2 or later
@@ -78,7 +78,7 @@ if (
 
         $button_text = sprintf(
         // translators: %1$s is for amount, %2$s is for currency
-            __('Pay %1$s %2$s', 'confirmo-woocommerce'),
+            __('Pay %1$s %2$s', 'confirmo-for-woocommerce'),
             esc_html($amount),
             esc_html($currency)
         );
