@@ -34,8 +34,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         'on-hold',
         'processing',
         'completed',
-        'failed',
-        'cancelled'
+        'failed'
     ];
     public static array $confirmoStatuses = [
         'prepared' => 'Prepared',
@@ -982,7 +981,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
                 return;
         }
 
-        if ($values[$confirmo_status] === 'complete' || $values[$confirmo_status] === 'processing') {
+        if ($values[$confirmo_status] === 'completed' || $values[$confirmo_status] === 'processing') {
             $order->payment_complete();
         } else {
             $changed = $order->update_status($values[$confirmo_status], $message);

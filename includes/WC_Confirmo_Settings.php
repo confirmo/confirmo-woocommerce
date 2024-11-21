@@ -73,7 +73,7 @@ class WC_Confirmo_Settings
 
     public static function configAdvancedCallback(): void
     {
-        echo '<p>' . esc_html__('Here you can adjust order status pairing to Confirmo payment status. For more detailed information about each Confirmo order status, ', 'confirmo-woocommerce') . '<a href="#" id="toggle-status-description">' .  esc_html__('click here', 'confirmo-woocommerce') . '</a></p>';
+        echo '<p>' . esc_html__('Here you can adjust the order statuses pairing to Confirmo payment statuses.', 'confirmo-woocommerce') . ' <strong>' . esc_html__('Please only modify these settings if you are confident in what you are doing.', 'confirmo-woocommerce') . '</strong> ' . esc_html__('To set up the order statuses, click ', 'confirmo-woocommerce') . '<a href="#" id="toggle-status-description">' .  esc_html__('click here', 'confirmo-woocommerce') . '</a></p>';
 
         echo '<script>
                 document.getElementById(\'toggle-status-description\').addEventListener(\'click\', e => {
@@ -135,7 +135,7 @@ class WC_Confirmo_Settings
             echo '</p>';
         }
 
-        echo '<br><br></div>';
+        echo '<br><br>';
     }
 
     public static function configApiKeyCallback(): void
@@ -164,7 +164,7 @@ class WC_Confirmo_Settings
         }
         echo '</select>';
 
-        echo '<p style="font-size: 13px;max-width: 500px; margin-top: 10px;">' . esc_html__('The currency in which funds will be credited and held in your account. If you select  \'Crypto Settlement (In Kind),\' all payments will be retained in the cryptocurrency used by the customer during checkout (e.g., BTC, ETH). Withdrawals will always be made in the settlement currency, whether fiat or cryptocurrency. It is not possible to exchange or convert settlement currencies for withdrawals. Funds must be withdrawn in the same currency in which they are settled.', 'confirmo-woocommerce') . '</p>';
+        echo '<p style="font-size: 13px;max-width: 500px; margin-top: 10px;">' . esc_html__('The currency in which funds will be credited and held in your account. If you select  \'Crypto Settlement (In Kind),\' all payments will be retained in the cryptocurrency used by the customer during checkout (e.g., BTC, ETH). Withdrawals will always be made in the settlement currency, whether fiat or cryptocurrency. It is not possible to exchange or convert settlement currencies for withdrawals. Funds must be withdrawn in the same currency in which they are settled. You need to set the settlement currency in our administration in order to be able to withdraw funds. More information is available ', 'confirmo-woocommerce') . '<a href="https://confirmo.net/blog/how-to-accept-crypto-with-woocommerce/#aioseo-">' . esc_html__('here', 'confirmo-woocommerce') . '</a></p>';
     }
 
     public static function configDescriptionCallback(): void
@@ -196,6 +196,13 @@ class WC_Confirmo_Settings
 
             foreach (WC_Confirmo_Gateway::$orderStatuses as $status) {
                 $selected = ($status === $values[$key]) ? 'selected' : '';
+
+                if ($key !== 'confirming' && $key !== 'paid') {
+                    if ($status === 'processing' || $status === 'completed') {
+                        continue;
+                    }
+                }
+
                 echo '<option value="' . esc_attr($status) . '" ' . esc_attr($selected) . '>';
                 echo esc_html($status);
                 echo '</option>';
@@ -205,7 +212,7 @@ class WC_Confirmo_Settings
             echo '</tr>';
         }
 
-        echo '</table>';
+        echo '</table></table></div>';
     }
 
     public static function validateConfigOptions(array $input): array
