@@ -128,76 +128,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     }
 
     /**
-     * Displays payment button generator page
-     *
-     * @return void
-     */
-    public function generatorPageContent(): void
-    {
-        $current_currency = get_option('confirmo_gate_config_options')['settlement_currency'];
-
-        echo '<div class="wrap">';
-        echo '<h1>' . esc_html__('Payment Button Generator', 'confirmo-for-woocommerce') . '</h1>';
-        echo '<form method="post" action="">';
-        wp_nonce_field('confirmo_set_style', 'confirmo_set_style_nonce');
-        echo '<table class="form-table">';
-        echo '<tr valign="top">';
-        echo '<th scope="row">' . esc_html(__('Currency', 'confirmo-for-woocommerce')) . '</th>';
-        echo '<td>';
-        echo '<select name="confirmo_currency" required>';
-        foreach (self::$allowedCurrencies as $value => $label) {
-            echo '<option value="' . esc_attr($value) . '" ' . selected($current_currency, $value) . '>' . esc_html($label) . '</option>';
-        }
-        echo '</select>';
-        echo '</td>';
-        echo '</tr>';
-        echo '<tr valign="top">';
-        echo '<th scope="row">' . esc_html(__('Amount', 'confirmo-for-woocommerce')) . '</th>';
-        echo '<td>';
-        echo '<input type="text" name="confirmo_amount" value="0" required/>';
-        echo '</td>';
-        echo '</tr>';
-        echo '<tr valign="top">';
-        echo '<th scope="row">' . esc_html(__('Button Color', 'confirmo-for-woocommerce')) . '</th>';
-        echo '<td>';
-        echo '<input type="color" name="confirmo_button_color" value="#000000" required/>';
-        echo '</td>';
-        echo '</tr>';
-        echo '<tr valign="top">';
-        echo '<th scope="row">' . esc_html(__('Text Color', 'confirmo-for-woocommerce')) . '</th>';
-        echo '<td>';
-        echo '<input type="color" name="confirmo_text_color" value="#FFFFFF" required/>';
-        echo '</td>';
-        echo '</tr>';
-        echo '<tr valign="top">';
-        echo '<th scope="row">' . esc_html(__('Border Radius (px)', 'confirmo-for-woocommerce')) . '</th>';
-        echo '<td>';
-        echo '<input type="number" name="confirmo_border_radius" value="0" required/>';
-        echo '</td>';
-        echo '</tr>';
-        echo '</table>';
-        echo '<p class="submit">';
-        echo '<button type="submit" class="button-primary">' . esc_html(__('Generate Shortcode', 'confirmo-for-woocommerce')) . '</button>';
-        echo '</p>';
-        echo '</form>';
-        if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST["confirmo_set_style_nonce"]) && wp_verify_nonce(sanitize_text_field(wp_unslash($_POST["confirmo_set_style_nonce"])), "confirmo_set_style")) {
-            if (!isset($_POST['confirmo_currency'], $_POST['confirmo_amount'], $_POST['confirmo_button_color'], $_POST['confirmo_text_color'], $_POST['confirmo_border_radius'])) {
-                wp_die(esc_html(__('Error: Missing POST data.', 'confirmo-for-woocommerce')));
-            }
-
-            $currency = sanitize_text_field(wp_unslash($_POST['confirmo_currency']));
-            $amount = sanitize_text_field(wp_unslash($_POST['confirmo_amount']));
-            $button_color = sanitize_hex_color(wp_unslash($_POST['confirmo_button_color']));
-            $text_color = sanitize_hex_color(wp_unslash($_POST['confirmo_text_color']));
-            $border_radius = intval($_POST['confirmo_border_radius']);
-
-            echo "<h2>" . esc_html(__('Generated Shortcode:', 'confirmo-for-woocommerce')) . "</h2>";
-            echo "<code>[confirmo currency=\"" . esc_attr($currency) . "\" amount=\"" . esc_attr($amount) . "\" button_color=\"" . esc_attr($button_color) . "\" text_color=\"" . esc_attr($text_color) . "\" border_radius=\"" . esc_attr($border_radius) . "\"]</code>";
-        }
-        echo '</div>';
-    }
-
-    /**
      * Display debug information page
      *
      * @return void
@@ -434,16 +364,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             'manage_options',
             'confirmo-payment',
             [$this, 'configPageContent']
-        );
-
-
-        add_submenu_page(
-            'confirmo-payment',
-            __('Payment Button Generator', 'confirmo-for-woocommerce'),
-            __('Payment Button Generator', 'confirmo-for-woocommerce'),
-            'manage_options',
-            'confirmo-payment-generator',
-            [$this, 'generatorPageContent']
         );
 
         add_submenu_page(
