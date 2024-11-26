@@ -128,55 +128,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     }
 
     /**
-     * Displays main plugin page content
-     *
-     * @return void
-     */
-    public function mainPageContent(): void
-    {
-        echo '<div class="wrap">';
-        echo '<h1>' . esc_html(__('Confirmo Cryptocurrency Payment Gateway', 'confirmo-for-woocommerce')) . '</h1>';
-        echo '<p>' . esc_html(__('Crypto payments made easy with industry leaders. Confirmo.net', 'confirmo-for-woocommerce')) . '</p>';
-
-        echo '<h2>' . esc_html(__('Enable the future of payments today', 'confirmo-for-woocommerce')) . '</h2>';
-        echo '<p>' . esc_html(__('Start accepting cryptocurrency payments with Confirmo, one of the fastest growing companies in crypto payments! We provide a payment gateway used by Forex brokers, prop trading companies, e-commerce merchants, and luxury businesses worldwide. Our clients include FTMO, My Forex Funds, Alza and many more. All rely on our easily integrated solutions, low fees, and top-class customer support.', 'confirmo-for-woocommerce')) . '</p>';
-
-        echo '<h2>' . esc_html__('Installing the plugin', 'confirmo-for-woocommerce') . '</h2>';
-        echo '<h3>' . esc_html__('WordPress plugins:', 'confirmo-for-woocommerce') . '</h3>';
-        echo '<ol>';
-        echo '<li>' . esc_html__('In your WordPress dashboard, go to Plugins – Add New, and search for \'Confirmo Cryptocurrency Payment Gateway\'.', 'confirmo-for-woocommerce') . '</li>';
-        echo '<li>' . esc_html__('Click Download, and then activate the plugin.', 'confirmo-for-woocommerce') . '</li>';
-        echo '<li>' . esc_html__('In your WordPress dashboard, go to WooCommerce – Settings – Payments. Click Confirmo. You will be asked to configure the plugin with information generated in your Confirmo account to connect them.', 'confirmo-for-woocommerce') . '</li>';
-        echo '</ol>';
-
-        echo '<h3>' . esc_html(__('Upload:', 'confirmo-for-woocommerce')) . '</h3>';
-        echo '<ol>';
-        echo '<li>' . esc_html(__('Download and extract the .zip file.', 'confirmo-for-woocommerce')) . '</li>';
-        echo '<li>' . esc_html(__('In your WordPress dashboard, go to Plugins – Add New – Upload Plugin, and upload the extracted folder. Activate the plugin.', 'confirmo-for-woocommerce')) . '</li>';
-        echo '<li>' . esc_html(__('In your WordPress dashboard, go to WooCommerce – Settings – Payments. Click Confirmo. You will be asked to configure the plugin with information generated in your Confirmo account to connect them.', 'confirmo-for-woocommerce')) . '</li>';
-        echo '</ol>';
-
-        echo '<h3>' . esc_html__('FTP or File Manager:', 'confirmo-for-woocommerce') . '</h3>';
-        echo '<ol>';
-        echo '<li>' . esc_html__('Download and extract the .zip file.', 'confirmo-for-woocommerce') . '</li>';
-        echo '<li>' . esc_html__('Copy the extracted contents into your WordPress installation under wp-content/plugins.', 'confirmo-for-woocommerce') . '</li>';
-        echo '<li>' . esc_html__('In your WordPress dashboard, go to Plugins – Installed plugins – Confirmo Cryptocurrency Payment Gateway. Activate the plugin.', 'confirmo-for-woocommerce') . '</li>';
-        echo '<li>' . esc_html__('In your WordPress dashboard, go to WooCommerce – Settings – Payments. Click Confirmo. You will be asked to configure the plugin with information generated in your Confirmo account to connect them.', 'confirmo-for-woocommerce') . '</li>';
-        echo '</ol>';
-
-        echo '<h2>' . esc_html(__('Connecting the plugin to your Confirmo account:', 'confirmo-for-woocommerce')) . '</h2>';
-        echo '<p>' . esc_html(__('Create an account at', 'confirmo-for-woocommerce')) . ' <a href="https://confirmo.net">Confirmo.net</a> ' . esc_html(__('and then go to Settings – API Keys – Create API key. You will be required to complete an e-mail verification, after which you will receive the API key. Once you have it, go to WooCommerce – Settings – Payments, and enable Confirmo as a payment method. Paste the API key into the respective field.', 'confirmo-for-woocommerce')) . '</p>';
-
-        echo '<p>' . esc_html(__('To generate a callback password, return to the Confirmo dashboard and go to Settings – Callback password. You will be prompted to complete a second e-mail verification and then provided with the callback password. Again, paste it into the respective field in WooCommerce – Settings – Payments. Callback passwords help increase the security of the API integration. Never share your API key or callback password with anyone!', 'confirmo-for-woocommerce')) . '</p>';
-
-        echo '<p>' . esc_html(__('Finally, choose your desired Settlement currency. Make sure to save your changes by clicking the button at the bottom. When the plugin is activated, Confirmo will appear as a payment option in your website\'s WooCommerce checkout. <b>Congratulations, you can now start receiving cryptocurrency payments!</b>', 'confirmo-for-woocommerce')) . '</p>';
-
-        echo '<p>' . esc_html(__('Read more at', 'confirmo-for-woocommerce')) . ' <a href="https://confirmo.net">Confirmo.net</a>. ' . esc_html(__('Should you encounter any difficulties, contact us at', 'confirmo-for-woocommerce')) . ' <a href="mailto:support@confirmo.net">support@confirmo.net</a></p>';
-
-        echo '</div>';
-    }
-
-    /**
      * Displays payment button generator page
      *
      * @return void
@@ -468,10 +419,10 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     {
         add_menu_page(
             __('Confirmo Payment', 'confirmo-for-woocommerce'),
-            __('Confirmo Payment', 'confirmo-for-woocommerce'),
+            __('Confirmo Payment Gate Config', 'confirmo-for-woocommerce'),
             'manage_options',
             'confirmo-payment',
-            [$this, 'mainPageContent'],
+            [$this, 'configPageContent'],
             'dashicons-money-alt',
             100
         );
@@ -483,15 +434,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             'manage_options',
             'confirmo-payment-generator',
             [$this, 'generatorPageContent']
-        );
-
-        add_submenu_page(
-            'confirmo-payment',
-            __('Payment Gate Config', 'confirmo-for-woocommerce'),
-            __('Payment Gate Config', 'confirmo-for-woocommerce'),
-            'manage_options',
-            'confirmo-payment-gate-config',
-            [$this, 'configPageContent']
         );
 
         add_submenu_page(
