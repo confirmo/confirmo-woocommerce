@@ -580,7 +580,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
      */
     public function addSettingsLink(array $links): array
     {
-        $settings_link = '<a href="' . admin_url('admin.php?page=confirmo-payment-gate-config') . '">' . __('Settings', 'confirmo-for-woocommerce') . '</a>';
+        $settings_link = '<a href="' . admin_url('admin.php?page=confirmo-payment') . '">' . __('Settings', 'confirmo-for-woocommerce') . '</a>';
         array_unshift($links, $settings_link);
         return $links;
     }
