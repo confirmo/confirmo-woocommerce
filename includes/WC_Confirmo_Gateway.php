@@ -418,14 +418,24 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     public function adminMenu(): void
     {
         add_menu_page(
+            __('Confirmo payment gate', 'confirmo-for-woocommerce'),
             __('Confirmo Payment', 'confirmo-for-woocommerce'),
-            __('Confirmo Payment Gate Config', 'confirmo-for-woocommerce'),
             'manage_options',
             'confirmo-payment',
             [$this, 'configPageContent'],
             'dashicons-money-alt',
             100
         );
+
+        add_submenu_page(
+            'confirmo-payment',
+            __('Settings', 'confirmo-for-woocommerce'),
+            __('Settings', 'confirmo-for-woocommerce'),
+            'manage_options',
+            'confirmo-payment',
+            [$this, 'configPageContent']
+        );
+
 
         add_submenu_page(
             'confirmo-payment',
