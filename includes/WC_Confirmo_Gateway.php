@@ -138,11 +138,13 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         global $wp_filesystem;
 
         $table_name = $wpdb->prefix . "confirmo_logs";
+        $threshold_date = date('Y-m-d', strtotime("-1 day"));
 
         $logs = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT * FROM %i ORDER BY time ASC",
-                $table_name
+                "SELECT * FROM %i WHERE time >= %s ORDER BY time ASC",
+                $table_name,
+                $threshold_date
             )
         );
 
