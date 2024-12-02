@@ -10,6 +10,7 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
  * @property string $method_description
  * @property $title
  * @property $description
+ * @property string $enabled
  */
 class WC_Confirmo_Gateway extends WC_Payment_Gateway
 {
@@ -51,9 +52,10 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
 
         $this->id = "confirmo";
         $this->method_title = __("Confirmo", 'confirmo-for-woocommerce');
-        $this->method_description = __("Settings have been moved. Please configure the gateway ", 'confirmo-for-woocommerce') . "<a href='" . admin_url('admin.php?page=confirmo-payment-gate-config') . "'>" . __("here", 'confirmo-for-woocommerce') . "</a>.";
+        $this->method_description = __("Settings have been moved. Please configure the gateway ", 'confirmo-for-woocommerce') . "<a href='" . admin_url('admin.php?page=confirmo-payment') . "'>" . __("here", 'confirmo-for-woocommerce') . "</a>.";
         $this->title = __("Confirmo", 'confirmo-for-woocommerce');
         $this->description = get_option('confirmo_gate_config_options')['description'];
+        $this->enabled = $this->get_option('enabled');
         $this->apiKey = get_option('confirmo_gate_config_options')['api_key'];
         $this->settlementCurrency = get_option('confirmo_gate_config_options')['settlement_currency'];
         $this->callbackPassword = get_option('confirmo_gate_config_options')['callback_password'];
