@@ -1,4 +1,4 @@
-=== Confirmo Cryptocurrency Payment Gateway ===
+=== Confirmo Cryptocurrency Payment Gateway for WooCommerce ===
 
 Contributors: confirmoadm  
 Tags: Confirmo, Cryptocurrency, Crypto, Crypto Payments, Payment Gateway  

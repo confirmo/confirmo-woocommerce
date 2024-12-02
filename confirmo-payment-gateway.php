@@ -1,6 +1,6 @@
 <?php
 /*
-* Plugin Name: Confirmo Cryptocurrency Payment Gateway
+* Plugin Name: Confirmo Cryptocurrency Payment Gateway for WooCommerce
 * Description: Accept payments in Bitcoin, Ethereum, USDT, USDC, and more directly in WooCommerce. Fast, secure, and easy-to-use crypto payment gateway.
 * Version: 2.6.2
 * Requires PHP: 7.4
