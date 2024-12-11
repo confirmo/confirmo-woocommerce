@@ -234,7 +234,24 @@ class WC_Confirmo_Settings
                 $new_input['api_key'] = $api_key;
             } else {
                 $new_input['api_key'] = $settings['api_key'] ?? '';
-                add_settings_error('api_key', 'api_key_error', __('API Key must be exactly 64 alphanumeric characters', 'confirmo-for-woocommerce'), 'error');
+                add_settings_error('confirmo_gate_config_config', 'api_key_error', __('API Key must be exactly 64 alphanumeric characters', 'confirmo-for-woocommerce'), 'error');
+            }
+
+            $url =  'https://confirmo.net/api/v3/currencies';
+
+            $response = wp_remote_get($url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $input['api_key'],
+                    'Content-Type' => 'application/json',
+                    'X-Payment-Module' => 'WooCommerce'
+                ],
+            ]);
+
+            $response_body = wp_remote_retrieve_body($response);
+            $response_data = json_decode($response_body, true);
+
+            if (isset($response_data['errors']) && count($response_data['errors']) > 0) {
+                add_settings_error('confirmo_gate_config_config', 'api_key_error', 'Provided API key is not valid, please re-check them.', 'error');
             }
         }
 
@@ -245,7 +262,7 @@ class WC_Confirmo_Settings
                 $new_input['callback_password'] = $callback_password;
             } else {
                 $new_input['callback_password'] = $settings['callback_password'] ?? '';
-                add_settings_error('callback_password', 'callback_password_error', __('Callback Password must be 16 alphanumeric characters', 'confirmo-for-woocommerce'), 'error');
+                add_settings_error('confirmo_gate_config_config', 'callback_password_error', __('Callback Password must be 16 alphanumeric characters', 'confirmo-for-woocommerce'), 'error');
             }
         }
 

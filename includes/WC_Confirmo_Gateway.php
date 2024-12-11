@@ -91,6 +91,9 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $this->loader->addAction('admin_init', [WC_Confirmo_Settings::class, 'register']);
 
         $this->loader->addAction('admin_menu', [$this, 'adminMenu']);
+        $this->loader->addAction('admin_notices', function () {
+            settings_errors('confirmo_gate_config_config');
+        });
 
         $this->loader->addAction('template_redirect', [$this, 'handleNotification']);
         $this->loader->addAction('template_redirect', [$this, 'customPaymentTemplateRedirect']);
