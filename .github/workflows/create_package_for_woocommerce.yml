@@ -43,8 +43,8 @@ jobs:
       #     draft: true
       #     prerelease: true
 
-      # - name: Remove default assets
-      #   run: gh api -X PATCH "repos/${{ github.repository }}/releases/${{ github.event.release.id }}" -F "assets=[]"
+      - name: Remove default assets
+        run: gh api -X PATCH "repos/${{ github.repository }}/releases/${{ github.event.release.id }}" -F "assets=[]"
 
       - name: Upload the asset
         uses: actions/upload-release-asset@v1
