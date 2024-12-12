@@ -7,9 +7,9 @@ on:
   release:
     types:
       - published
-      - released
-      - prereleased
-      - created
+      # - released
+      # - prereleased
+      # - created
 
 jobs:
   create-zip-package:
