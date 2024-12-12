@@ -627,6 +627,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     public function process_payment($order_id): array
     {
         global $woocommerce;
+        global $confirmo_version;
 
         $order = wc_get_order($order_id);
         $order_currency = $order->get_currency();
@@ -651,7 +652,8 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $headers = [
             'Authorization' => 'Bearer ' . $this->apiKey,
             'Content-Type' => 'application/json',
-            'X-Payment-Module' => 'WooCommerce'
+            'X-Payment-Module' => 'WooCommerce',
+            'Payment-Module-Version' => $confirmo_version,
         ];
 
         if ($this->settlementCurrency === 'Crypto Settlement (In Kind)') {
