@@ -1,15 +1,9 @@
 name: Create a package for WooCommerce
 
-on: workflow_dispatch
-
-# on:
-#   push:
-#     branches:
-#       - master
-#   release:
-#     types:
-#       - published
-
+on:
+  push:
+    tags:
+      - '*.*.*'
 jobs:
   create-zip-package:
     name: Create and upload a custom zip package
