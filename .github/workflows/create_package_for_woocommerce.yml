@@ -1,9 +1,13 @@
 name: Create a package for WooCommerce
 
 on:
-  push:
-    tags:
-      - '*.*.*'
+  # push:
+  #   tags:
+  #     - '*.*.*'
+  release:
+    types:
+      - published
+
 jobs:
   create-zip-package:
     name: Create and upload a custom zip package
@@ -23,25 +27,28 @@ jobs:
           cd /tmp/pkg
           zip -r confirmo-for-woocommerce.zip confirmo-for-woocommerce
 
-      - name: Create a new release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          body: |
-            TODO: Add release notes
-          draft: true
-          prerelease: true
+      # - name: Create a new release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ github.ref }}
+      #     release_name: ${{ github.ref }}
+      #     body: |
+      #       TODO: Add release notes
+      #     draft: true
+      #     prerelease: true
+
+      # - name: Remove default assets
+      #   run: gh api -X PATCH "repos/${{ github.repository }}/releases/${{ github.event.release.id }}" -F "assets=[]"
 
       - name: Upload the asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ github.event.release.upload_url }}
           asset_path: /tmp/pkg/confirmo-for-woocommerce.zip
           asset_name: confirmo-for-woocommerce.zip
           asset_content_type: application/zip
