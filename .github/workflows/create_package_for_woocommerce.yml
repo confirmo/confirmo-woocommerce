@@ -18,13 +18,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Create a distribution directory
-        run: |
-          mkdir confirmo-for-woocommerce
-          cp -r ./* ./confirmo-for-woocommerce/
+        run: cp -r ./* ./confirmo-for-woocommerce
 
       - name: Create a zip package
-        run: |
-          zip -r confirmo-for-woocommerce.zip confirmo-for-woocommerce
+        run: zip -r confirmo-for-woocommerce.zip confirmo-for-woocommerce
 
       - name: Upload the package
         uses: actions/upload-artifact@v3
@@ -38,5 +35,4 @@ jobs:
 
     steps:
       - name: Remove default assets
-        run: |
-          gh api -X PATCH "repos/${{ github.repository }}/releases/${{ github.event.release.id }}" -F "assets=[]"
+        run: gh api -X PATCH "repos/${{ github.repository }}/releases/${{ github.event.release.id }}" -F "assets=[]"
