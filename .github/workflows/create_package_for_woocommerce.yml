@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Create a distribution directory
-        run:
+        run: |
           mkdir -p /tmp/pkg/confirmo-for-woocommerce
           cp -r ./* /tmp/pkg/confirmo-for-woocommerce/
 
