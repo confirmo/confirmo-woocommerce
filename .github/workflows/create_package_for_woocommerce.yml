@@ -1,15 +1,9 @@
 name: Create a package for WooCommerce
 
 on:
-  # push:
-  #   tags:
-  #     - '*.*.*'
   release:
     types:
       - published
-      # - released
-      # - prereleased
-      # - created
 
 jobs:
   create-zip-package:
@@ -29,24 +23,6 @@ jobs:
         run: |
           cd /tmp/pkg
           zip -r confirmo-for-woocommerce.zip confirmo-for-woocommerce
-
-      # - name: Create a new release
-      #   id: create_release
-      #   uses: actions/create-release@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     tag_name: ${{ github.ref }}
-      #     release_name: ${{ github.ref }}
-      #     body: |
-      #       TODO: Add release notes
-      #     draft: true
-      #     prerelease: true
-
-      - name: Remove default assets
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api -X PATCH "repos/${{ github.repository }}/releases/${{ github.event.release.id }}" -F "assets=[]"
 
       - name: Upload the asset
         uses: actions/upload-release-asset@v1
