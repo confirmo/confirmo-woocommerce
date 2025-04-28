@@ -14,7 +14,7 @@
 */
 
 global $confirmo_version;
-$confirmo_version = '2.6.3';
+$confirmo_version = '2.7.0';
 
 if (!defined('ABSPATH')) exit;
 
