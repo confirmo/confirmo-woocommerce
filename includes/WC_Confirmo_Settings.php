@@ -78,7 +78,7 @@ class WC_Confirmo_Settings
         echo '<script>
                 document.getElementById(\'toggle-status-description\').addEventListener(\'click\', e => {
                     e.preventDefault();
-                
+
                     if (document.getElementById(\'confirmo-statuses-description\').style.display === \'none\') {
                         document.getElementById(\'confirmo-statuses-description\').style.display = \'block\';
                     } else {
@@ -142,7 +142,7 @@ class WC_Confirmo_Settings
     {
         $options = get_option('confirmo_gate_config_options');
         $value = isset($options['api_key']) ? esc_attr($options['api_key']) : '';
-        echo('<input type="text" id="api_key" name="confirmo_gate_config_options[api_key]" value="' . esc_attr($value) . '" size="70" maxlength="64" required>');
+        echo('<input type="text" id="api_key" name="confirmo_gate_config_options[api_key]" value="' . esc_attr($value) . '" size="70" required>');
     }
 
     public static function configCallbackPasswordCallback(): void
