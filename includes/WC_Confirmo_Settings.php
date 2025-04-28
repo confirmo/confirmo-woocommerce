@@ -229,13 +229,7 @@ class WC_Confirmo_Settings
 
         if (isset($input['api_key'])) {
             $api_key = sanitize_text_field($input['api_key']);
-
-            if (strlen($api_key) == 64 && ctype_alnum($api_key)) {
-                $new_input['api_key'] = $api_key;
-            } else {
-                $new_input['api_key'] = $settings['api_key'] ?? '';
-                add_settings_error('confirmo_gate_config_config', 'api_key_error', __('API Key must be exactly 64 alphanumeric characters', 'confirmo-for-woocommerce'), 'error');
-            }
+            $new_input['api_key'] = $api_key;
 
             $url =  'https://confirmo.net/api/v3/currencies';
 
