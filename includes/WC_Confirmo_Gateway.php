@@ -864,14 +864,14 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
 
         if ($values[$confirmo_status] === 'completed' || $values[$confirmo_status] === 'processing') {
             $order->payment_complete();
-        } else {
-            $changed = $order->update_status($values[$confirmo_status], $message);
-
-            if (!$changed) {
-                $this->addDebugLog($order->get_id(), __('Order update status failed', 'confirmo-for-woocommerce'), 'order_status_update');
-            }
         }
 
+        $changed = $order->update_status($values[$confirmo_status], $message);
+    
+        if (!$changed) {
+            $this->addDebugLog($order->get_id(), __('Order update status failed', 'confirmo-for-woocommerce'), 'order_status_update');
+        }
+        
         $this->addDebugLog($order->get_id(), "Order status updated to: " . $order->get_status() . " based on Confirmo status: " . $confirmo_status, 'order_status_update');
     }
 
