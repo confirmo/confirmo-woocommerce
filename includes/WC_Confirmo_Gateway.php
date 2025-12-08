@@ -98,7 +98,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $this->loader->addAction('template_redirect', [$this, 'handleNotification']);
         $this->loader->addAction('template_redirect', [$this, 'customPaymentTemplateRedirect']);
 
-        $this->loader->addAction('plugins_loaded', [$this, 'loadTextDomain']);
+        $this->loader->addAction('init', [$this, 'loadTextDomain']);
         $this->loader->addAction('plugins_loaded', [$this, 'updateDbCheck']);
 
         $this->loader->addAction('before_woocommerce_init', [$this, 'declareCartCheckoutBlocksCompatibility']);
@@ -660,6 +660,22 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             $this->settlementCurrency = null;
         }
 
+        $customer_profile = [
+            'profileId' => $order->get_customer_id(),
+            'type' => $order->get_billing_company() ? 'company' : 'individual',
+            'streetAddress' => $order->get_billing_address_1(),
+            'city' => $order->get_billing_city(),
+            'postalCode' => $order->get_billing_postcode(),
+            'country' => $order->get_billing_country(),
+        ];
+
+        if ($order->get_billing_company()) {
+            $customer_profile['registeredName'] = $order->get_billing_company();    
+        } else {
+            $customer_profile['firstName'] = $order->get_billing_first_name();
+            $customer_profile['lastName'] = $order->get_billing_last_name();
+        }
+
         $body = [
             'settlement' => ['currency' => $this->settlementCurrency],
             'product' => ['name' => $product_name, 'description' => $product_description],
@@ -668,6 +684,8 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             'notifyUrl' => $notify_url,
             'returnUrl' => $return_url,
             'reference' => strval($order_id),
+            'customerEmail' => $customer_email,
+            'customerProfile' => $customer_profile
         ];
 
         $response = wp_remote_post($url, [
