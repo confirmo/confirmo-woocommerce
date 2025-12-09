@@ -661,7 +661,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         }
 
         $customer_profile = [
-            'profileId' => $order->get_customer_id(),
+            'profileId' => $order->get_customer_email(),
             'type' => $order->get_billing_company() ? 'company' : 'individual',
             'streetAddress' => $order->get_billing_address_1(),
             'city' => $order->get_billing_city(),
