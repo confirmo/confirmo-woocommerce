@@ -181,7 +181,7 @@ class WC_Confirmo_Settings
             'prepared' => 'on-hold',
             'active' => 'on-hold',
             'confirming' => 'on-hold',
-            'paid' => 'complete',
+            'paid' => 'completed',
             'expired' => 'failed',
             'error' => 'failed',
         ];
