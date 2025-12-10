@@ -866,6 +866,9 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             case 'confirming':
                 $message = __('Payment received, awaiting confirmations', 'confirmo-for-woocommerce');
                 break;
+            case 'pending_verification':
+                $message = __('Client needs to provide additional info to satisfy regulatory requirements.', 'confirmo-for-woocommerce');
+                break;
             case 'paid':
                 $message = __('Payment confirmed, letting woocommerce decide whether to complete order or set to processing', 'confirmo-for-woocommerce');
                 break;
@@ -880,10 +883,19 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
                 return;
         }
 
+        /**
+         * If the Confirmo status is 'completed' or 'processing', mark the payment as complete in WooCommerce.
+         * This changes order status internally and triggers related actions, such as confirming stock reduction.
+         */
         if ($values[$confirmo_status] === 'completed' || $values[$confirmo_status] === 'processing') {
             $order->payment_complete();
         }
 
+        /**
+         * Update the order status in WooCommerce based on the mapping defined in plugin settings. 
+         * This ensures that the order status is in sync with the user defined mapping for each Confirmo status.
+         * Although this is reduntant in our default mapping of statuses, it allows for custom mappings defined by the user.
+         */
         $changed = $order->update_status($values[$confirmo_status], $message);
     
         if (!$changed) {
