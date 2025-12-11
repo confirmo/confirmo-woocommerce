@@ -110,7 +110,13 @@ class WC_Confirmo_Settings
                 'status' => 'Confirming',
                 'desc' => 'Payment has been detected, and the amount is correct or higher, but it is still awaiting sufficient confirmations on the crypto network.',
                 'next_label' => 'Next states:',
-                'next_value' => 'Error, Paid'
+                'next_value' => 'Error, Paid, Pending Verification'
+            ],
+            [
+                'status' => 'Pending Verification',
+                'desc' => 'Client needs to provide additional info to satisfy regulatory requirements.',
+                'next_label' => 'Next states:',
+                'next_value' => 'Expired, Paid'
             ],
             [
                 'status' => 'Error',
@@ -181,6 +187,7 @@ class WC_Confirmo_Settings
             'prepared' => 'on-hold',
             'active' => 'on-hold',
             'confirming' => 'on-hold',
+            'pending_verification' => 'on-hold',
             'paid' => 'completed',
             'expired' => 'failed',
             'error' => 'failed',

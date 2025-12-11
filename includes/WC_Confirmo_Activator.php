@@ -26,6 +26,7 @@ class WC_Confirmo_Activator
             'custom_states' => [
                 'prepared' => 'on-hold',
                 'active' => 'on-hold',
+                'pending_verification' => 'on-hold',
                 'confirming' => 'on-hold',
                 'paid' => 'completed',
                 'expired' => 'failed',
