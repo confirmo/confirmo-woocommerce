@@ -8,7 +8,7 @@ Stable tag: 2.8.2
 Requires PHP: 7.4  
 License: GPLv2 or later  
 License URI: http://www.gnu.org/licenses/gpl-2.0.html  
-Crypto payments made easy with with industry leaders. Confirmo.com
+Crypto payments made easy with industry leaders. Confirmo.com
 
 == Description ==
 
