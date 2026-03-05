@@ -127,7 +127,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     {
         global $confirmo_version;
 
-        if (get_site_option('confirmo_version') != $confirmo_version) {
+        if (get_option('confirmo_version') != $confirmo_version) {
             WC_Confirmo_Activator::activate();
         }
     }
