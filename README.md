@@ -8,7 +8,7 @@ Stable tag: 2.8.2
 Requires PHP: 7.4  
 License: GPLv2 or later  
 License URI: http://www.gnu.org/licenses/gpl-2.0.html  
-Crypto payments made easy with with industry leaders. Confirmo.net
+Crypto payments made easy with with industry leaders. Confirmo.com
 
 == Description ==
 
@@ -70,7 +70,7 @@ Verification is usually done within one business day. This means that an account
 
 We currently support the following cryptocurrencies: BTC, BTC (Lightning), ETH, SOL, LTC, TRX, USDC and USDT.
 
-Would you like to see another cryptocurrency here? Contact us at support@confirmo.net
+Would you like to see another cryptocurrency here? Contact us at support@confirmo.com
 
 
 = How does Confirmo guarantee the exchange rate when I accept crypto but receive fiat?

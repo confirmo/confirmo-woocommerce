@@ -4,7 +4,7 @@
 * Description: Accept payments in Bitcoin, Ethereum, USDT, USDC, and more directly in WooCommerce. Fast, secure, and easy-to-use crypto payment gateway.
 * Version: 2.8.2
 * Requires PHP: 7.4
-* Author: Confirmo.net
+* Author: Confirmo.com
 * Author URI: https://confirmo.com
 * Text Domain: confirmo-for-woocommerce
 * Domain Path: /languages
