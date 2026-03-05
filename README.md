@@ -4,7 +4,7 @@ Contributors: confirmoadm
 Tags: Confirmo, Cryptocurrency, Crypto, Crypto Payments, Payment Gateway  
 Requires at least: 6.2  
 Tested up to: 6.7  
-Stable tag: 2.8.1
+Stable tag: 2.8.2
 Requires PHP: 7.4  
 License: GPLv2 or later  
 License URI: http://www.gnu.org/licenses/gpl-2.0.html  
@@ -18,7 +18,7 @@ Start accepting cryptocurrency payments with Confirmo, one of the fastest growin
 
 By accepting crypto payments you open your business to a new revenue stream. Despite being commonly viewed as an investment tool, cryptocurrencies were created as an alternative to centralized, inflationary financial systems, and crypto holders are now looking for businesses which accept their funds. Using Confirmo's WooCommerce plugin is a simple way to do so. Installing it is quick and easy, so choose your preferred method below.
 
-> This plugin connects your WooCommerce instance with the 3rd-party service Confirmo. More information about the Confirmo crypto payment gateway can be found at [https://confirmo.net](https://confirmo.net). An integral part of the plugin is the API requests to Confirmo, which are described in more detail in [the Confirmo API documentation](https://confirmo.net/docs/api-reference).
+> This plugin connects your WooCommerce instance with the 3rd-party service Confirmo. More information about the Confirmo crypto payment gateway can be found at [https://confirmo.com](https://confirmo.com). An integral part of the plugin is the API requests to Confirmo, which are described in more detail in [the Confirmo API documentation](https://confirmo.com/docs/api-reference).
 
 
 ## Installing the plugin
@@ -40,13 +40,13 @@ By accepting crypto payments you open your business to a new revenue stream. Des
 4. In your Wordpress dashboard, go to WooCommerce – Settings – Payments. Click Confirmo. You will be asked to configure the plugin with information generated in your Confirmo account to connect them.
 
 ## Connecting the plugin to your Confirmo account:
-Create an account at [https://confirmo.net](https://confirmo.net) and then go to `Settings – API Keys – Create API key`. You will be required to complete an e-mail verification, after which you will receive the API key. Once you have it, go to `WooCommerce – Settings – Payments`, and enable Confirmo as a payment method. Paste the API key into the respective field.
+Create an account at [https://confirmo.com](https://confirmo.com) and then go to `Settings – API Keys – Create API key`. You will be required to complete an e-mail verification, after which you will receive the API key. Once you have it, go to `WooCommerce – Settings – Payments`, and enable Confirmo as a payment method. Paste the API key into the respective field.
 
 To generate a callback password, return to the Confirmo dashboard and go to `Settings – Callback password`. You will be prompted to complete a second e-mail verification and then provided with the callback password. Again, paste it into the respective field in `WooCommerce – Settings – Payments`. Callback passwords help increase the security of the API integration. Never share your API key or callback password with anyone!
 
 Finally, choose your desired Settlement currency. Make sure to save your changes by clicking the button at the bottom. When the plugin is activated, Confirmo will appear as a payment option in your website's WooCommerce checkout. **Congratulations, you can now start receiving cryptocurrency payments!**
 
-Read more at [Confirmo.net](https://confirmo.net). Should you encounter any difficulties, [contact us](mailto:support@confirmo.net) at [support@confirmo.net](mailto:support@confirmo.net).
+Read more at [Confirmo.com](https://confirmo.com). Should you encounter any difficulties, [contact us](mailto:support@confirmo.com) at [support@confirmo.com](mailto:support@confirmo.com).
 
 
 == Frequently Asked Questions ==
@@ -96,4 +96,4 @@ Settlements (recurrent withdrawals) are free, but bank fees apply.
 
 = Where can I find the Terms & Conditions? =
 
-The most up-to-date Terms & Conditions are available on the Confirmo website in [the Terms & Conditions](https://confirmo.net/legal/terms-and-conditions) section.
+The most up-to-date Terms & Conditions are available on the Confirmo website in [the Terms & Conditions](https://confirmo.com/legal/terms-and-conditions) section.

@@ -70,7 +70,11 @@ class WC_Confirmo_Activator
         dbDelta($sql);
 
         add_option('confirmo_version', $confirmo_version);
-        add_option('confirmo_base_url', 'https://confirmo.net');
+        add_option('confirmo_base_url', 'https://confirmo.com');
+
+        if (get_option('confirmo_base_url') === 'https://confirmo.net') {
+            update_option('confirmo_base_url', 'https://confirmo.com');
+        }
     }
 
     /**
