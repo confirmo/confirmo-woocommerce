@@ -68,7 +68,7 @@ class WC_Confirmo_Settings
 
     public static function configSectionCallback(): void
     {
-        echo '<p>' . esc_html__('Adjust the settings for Confirmo payment gateway. For detailed installation guidance, refer to the ', 'confirmo-for-woocommerce') . '<a href="https://confirmo.com/blog/how-to-accept-crypto-with-woocommerce/" target="_blank">' . esc_html__('Confirmo installation guide', 'confirmo-for-woocommerce') . '</a></p>';
+        echo '<p>' . esc_html__('Adjust the settings for Confirmo payment gateway. For detailed installation guidance, refer to the ', 'confirmo-for-woocommerce') . '<a href="https://docs.confirmo.com/docs/woocommerce-plugin" target="_blank">' . esc_html__('Confirmo installation guide', 'confirmo-for-woocommerce') . '</a></p>';
     }
 
     public static function configAdvancedCallback(): void
@@ -170,7 +170,7 @@ class WC_Confirmo_Settings
         }
         echo '</select>';
 
-        echo '<p style="font-size: 13px;max-width: 500px; margin-top: 10px;">' . esc_html__('The currency in which funds will be credited and held in your account. If you select  \'Crypto Settlement (In Kind),\' all payments will be retained in the cryptocurrency used by the customer during checkout (e.g., BTC, ETH). Withdrawals will always be made in the settlement currency, whether fiat or cryptocurrency. It is not possible to exchange or convert settlement currencies for withdrawals. Funds must be withdrawn in the same currency in which they are settled. You need to set the settlement currency in our administration in order to be able to withdraw funds. More information is available ', 'confirmo-for-woocommerce') . '<a href="https://confirmo.com/blog/how-to-accept-crypto-with-woocommerce/#aioseo-">' . esc_html__('here', 'confirmo-for-woocommerce') . '</a></p>';
+        echo '<p style="font-size: 13px;max-width: 500px; margin-top: 10px;">' . esc_html__('The currency in which funds will be credited and held in your account. If you select  \'Crypto Settlement (In Kind),\' all payments will be retained in the cryptocurrency used by the customer during checkout (e.g., BTC, ETH). Withdrawals will always be made in the settlement currency, whether fiat or cryptocurrency. It is not possible to exchange or convert settlement currencies for withdrawals. Funds must be withdrawn in the same currency in which they are settled. You need to set the settlement currency in our administration in order to be able to withdraw funds. More information is available ', 'confirmo-for-woocommerce') . '<a href="https://docs.confirmo.com/docs/woocommerce-plugin">' . esc_html__('here', 'confirmo-for-woocommerce') . '</a></p>';
     }
 
     public static function configDescriptionCallback(): void
