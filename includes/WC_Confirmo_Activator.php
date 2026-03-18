@@ -69,8 +69,12 @@ class WC_Confirmo_Activator
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta($sql);
 
-        add_option('confirmo_version', $confirmo_version);
-        add_option('confirmo_base_url', 'https://confirmo.net');
+        update_option('confirmo_version', $confirmo_version);
+        add_option('confirmo_base_url', 'https://confirmo.com');
+
+        if (get_option('confirmo_base_url') === 'https://confirmo.net') {
+            update_option('confirmo_base_url', 'https://confirmo.com');
+        }
     }
 
     /**
