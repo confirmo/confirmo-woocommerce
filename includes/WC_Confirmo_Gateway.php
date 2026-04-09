@@ -59,7 +59,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $this->apiKey = get_option('confirmo_gate_config_options')['api_key'];
         $this->settlementCurrency = get_option('confirmo_gate_config_options')['settlement_currency'];
         $this->callbackPassword = get_option('confirmo_gate_config_options')['callback_password'];
-        $this->apiBaseUrl = get_option('confirmo_base_url');
+        $this->apiBaseUrl = 'https://api.confirmo.com';
         // If needed, other initializations can be done here.
     }
 

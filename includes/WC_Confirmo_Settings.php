@@ -238,7 +238,7 @@ class WC_Confirmo_Settings
             $api_key = sanitize_text_field($input['api_key']);
             $new_input['api_key'] = $api_key;
 
-            $url = 'https://confirmo.com/api/v3/currencies';
+            $url = 'https://api.confirmo.com/api/v3/currencies';
 
             $response = wp_remote_get($url, [
                 'headers' => [
