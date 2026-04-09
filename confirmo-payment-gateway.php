@@ -16,6 +16,10 @@
 global $confirmo_version;
 $confirmo_version = '2.8.2';
 
+if (!defined('CONFIRMO_API_URL')) {
+    define('CONFIRMO_API_URL', 'https://api.confirmo.com');
+}
+
 if (!defined('ABSPATH')) exit;
 
 require_once plugin_dir_path( __FILE__ ) . 'includes/WC_Confirmo_Activator.php';
