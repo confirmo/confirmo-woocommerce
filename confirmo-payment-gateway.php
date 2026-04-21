@@ -2,7 +2,7 @@
 /*
 * Plugin Name: Confirmo Cryptocurrency Payment Gateway for WooCommerce
 * Description: Accept payments in Bitcoin, Ethereum, USDT, USDC, and more directly in WooCommerce. Fast, secure, and easy-to-use crypto payment gateway.
-* Version: 2.8.2
+* Version: 2.9.0
 * Requires PHP: 7.4
 * Author: Confirmo.com
 * Author URI: https://confirmo.com
@@ -14,7 +14,7 @@
 */
 
 global $confirmo_version;
-$confirmo_version = '2.8.2';
+$confirmo_version = '2.9.0';
 
 if (!defined('CONFIRMO_API_URL')) {
     define('CONFIRMO_API_URL', 'https://api.confirmo.com');
