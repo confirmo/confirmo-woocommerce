@@ -164,7 +164,7 @@ msgid "Confirmo Payment URL:"
 msgstr ""
 
 #. Author of the plugin
-msgid "Confirmo.net"
+msgid "Confirmo.com"
 msgstr ""
 
 #: confirmo-payment-gateway.php:504 confirmo-payment-gateway.php:712
@@ -179,7 +179,7 @@ msgstr ""
 
 #: confirmo-payment-gateway.php:505 confirmo-payment-gateway.php:713
 msgid ""
-"Create an account at <a href=\"https://confirmo.net\">Confirmo.net</a> and "
+"Create an account at <a href=\"https://confirmo.com\">Confirmo.com</a> and "
 "then go to Settings – API Keys – Create API key. You will be required to "
 "complete an e-mail verification, after which you will receive the API key. "
 "Once you have it, go to WooCommerce – Settings – Payments, and enable "
@@ -195,7 +195,7 @@ msgid "Crypto payments made easy with industry leaders."
 msgstr ""
 
 #: confirmo-payment-gateway.php:476 confirmo-payment-gateway.php:684
-msgid "Crypto payments made easy with industry leaders. Confirmo.net"
+msgid "Crypto payments made easy with industry leaders. Confirmo.com"
 msgstr ""
 
 #: confirmo-payment-gateway.php:539
@@ -281,7 +281,7 @@ msgid "Generating a payment button using shortcode"
 msgstr ""
 
 #. Author URI of the plugin
-msgid "https://confirmo.net"
+msgid "https://confirmo.com"
 msgstr ""
 
 #: confirmo-payment-gateway.php:603
@@ -375,9 +375,9 @@ msgstr ""
 
 #: confirmo-payment-gateway.php:511 confirmo-payment-gateway.php:731
 msgid ""
-"Read more at <a href=\"https://confirmo.net\">Confirmo.net</a>. Should you "
-"encounter any difficulties, <a href=\"mailto:support@confirmo.net\">contact "
-"us</a> at support@confirmo.net"
+"Read more at <a href=\"https://confirmo.com\">Confirmo.com</a>. Should you "
+"encounter any difficulties, <a href=\"mailto:support@confirmo.com\">contact "
+"us</a> at support@confirmo.com"
 msgstr ""
 
 #: confirmo-payment-gateway.php:159

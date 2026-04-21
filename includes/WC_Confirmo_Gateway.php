@@ -21,7 +21,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     protected $wpdb;
     public string $pluginName;
     public string $pluginBaseDir;
-    private string $apiBaseUrl;
     public static array $allowedCurrencies = [
         'USDT' => 'USDT',
         'USDC' => 'USDC',
@@ -59,7 +58,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $this->apiKey = get_option('confirmo_gate_config_options')['api_key'];
         $this->settlementCurrency = get_option('confirmo_gate_config_options')['settlement_currency'];
         $this->callbackPassword = get_option('confirmo_gate_config_options')['callback_password'];
-        $this->apiBaseUrl = get_option('confirmo_base_url');
         // If needed, other initializations can be done here.
     }
 
@@ -280,9 +278,9 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
 
         $wpdb->query(
             $wpdb->prepare(
-                "DELETE FROM %i WHERE time < %d",
+                "DELETE FROM %i WHERE time < %s",
                 $table_name,
-                strtotime('-30 days', current_time('timestamp'))
+                date('Y-m-d H:i:s', strtotime('-30 days'))
             )
         );
     }
@@ -626,7 +624,6 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
      */
     public function process_payment($order_id): array
     {
-        global $woocommerce;
         global $confirmo_version;
 
         $order = wc_get_order($order_id);
@@ -644,7 +641,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $product_description = rtrim($product_description, ' + ');
         $customer_email = $order->get_billing_email();
 
-        $url = $this->apiBaseUrl . '/api/v3/invoices';
+        $url = CONFIRMO_API_URL . '/api/v3/invoices';
 
         $notify_url = $this->generateNotifyUrl();
         $return_url = $order->get_checkout_order_received_url();
@@ -717,7 +714,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $order->update_status('pending', __('Awaiting Confirmo payment.', 'confirmo-for-woocommerce'));
 
         wc_reduce_stock_levels($order_id);
-        $woocommerce->cart->empty_cart();
+        WC()->cart->empty_cart();
 
         if ($order_id && $response_data) {
             $this->addDebugLog($order_id, wp_json_encode($response_data), $confirmo_redirect_url);
@@ -820,7 +817,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     private function verifyInvoiceStatus($invoice_id)
     {
         $api_key = $this->apiKey;
-        $url = $this->apiBaseUrl . '/api/v3/invoices/' . $invoice_id;
+        $url = CONFIRMO_API_URL . '/api/v3/invoices/' . $invoice_id;
 
         $response = wp_remote_get($url, [
             'headers' => [
@@ -957,7 +954,8 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     {
         $notification_url = home_url('confirmo-notification');
         $return_url = wc_get_cart_url();
-        $url = $this->apiBaseUrl . '/api/v3/invoices';
+        $url = CONFIRMO_API_URL . '/api/v3/invoices';
+
 
         $data = [
             'settlement' => ['currency' => $currency],
