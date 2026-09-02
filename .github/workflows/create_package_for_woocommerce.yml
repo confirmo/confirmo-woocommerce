@@ -18,6 +18,9 @@ jobs:
         run: |
           mkdir -p /tmp/pkg/confirmo-for-woocommerce
           cp -r ./* /tmp/pkg/confirmo-for-woocommerce/
+          # Development-only; merchants have no use for it in the plugin folder.
+          rm -rf /tmp/pkg/confirmo-for-woocommerce/tests \
+                 /tmp/pkg/confirmo-for-woocommerce/phpunit.xml.dist
 
       - name: Create a zip package
         run: |
