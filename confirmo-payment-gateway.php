@@ -48,6 +48,9 @@ if (
         $gateway->pluginBaseDir = __FILE__;
         $gateway->run();
 
+        require_once plugin_dir_path( __FILE__ ) . 'includes/WC_Confirmo_Subscribe_Module.php';
+        WC_Confirmo_Subscribe_Module::boot(__FILE__);
+
         // Schedule the log cleanup to run daily
         if (!wp_next_scheduled('confirmo_purge_old_logs_hook')) {
             wp_schedule_event(time(), 'daily', 'confirmo_purge_old_logs_hook');

@@ -55,9 +55,9 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $this->title = __("Confirmo", 'confirmo-for-woocommerce');
         $this->description = get_option('confirmo_gate_config_options')['description'];
         $this->enabled = $this->get_option('enabled');
-        $this->apiKey = get_option('confirmo_gate_config_options')['api_key'];
+        $this->apiKey = get_option('confirmo_gate_config_options')['api_key'] ?? '';
         $this->settlementCurrency = get_option('confirmo_gate_config_options')['settlement_currency'];
-        $this->callbackPassword = get_option('confirmo_gate_config_options')['callback_password'];
+        $this->callbackPassword = get_option('confirmo_gate_config_options')['callback_password'] ?? '';
         // If needed, other initializations can be done here.
     }
 
@@ -92,6 +92,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $this->loader->addAction('admin_notices', function () {
             settings_errors('confirmo_gate_config_config');
         });
+        $this->loader->addAction('admin_notices', [$this, 'callbackPasswordNotice']);
 
         $this->loader->addAction('template_redirect', [$this, 'handleNotification']);
         $this->loader->addAction('template_redirect', [$this, 'customPaymentTemplateRedirect']);
@@ -175,10 +176,12 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             echo '</table>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="confirmo_download_logs" value="1">';
+            wp_nonce_field('confirmo_download_logs');
             echo '<p><button type="submit" class="button button-primary">' . esc_html(__('Download Debug Logs', 'confirmo-for-woocommerce')) . '</button></p>';
             echo '</form>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="confirmo_delete_logs">';
+            wp_nonce_field('confirmo_delete_logs');
             echo '<p><button type="submit" class="button button-secondary">' . esc_html(__('Delete all logs', 'confirmo-for-woocommerce')) . '</button></p>';
             echo '</form>';
         } else {
@@ -201,7 +204,32 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         do_settings_sections('confirmo-payment-gate-config');
         submit_button(__('Save Settings', 'confirmo-for-woocommerce'));
         echo '</form>';
+        do_action('confirmo_subscribe_settings_page');
         echo '</div>';
+    }
+
+    /**
+     * Warns when an API key is configured but no callback password is set
+     *
+     * @return void
+     */
+    public function callbackPasswordNotice(): void
+    {
+        if ($this->apiKey === '' || $this->callbackPassword !== '') {
+            return;
+        }
+
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        printf(
+            '<div class="notice notice-error"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
+            esc_html__('Confirmo:', 'confirmo-for-woocommerce'),
+            esc_html__('no Callback Password is set, so Confirmo payment notifications are rejected and paid orders will stay pending.', 'confirmo-for-woocommerce'),
+            esc_url(admin_url('admin.php?page=confirmo-payment')),
+            esc_html__('Add your Callback Password', 'confirmo-for-woocommerce')
+        );
     }
 
     /**
@@ -296,6 +324,11 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $wpdb = $this->wpdb;
 
         if (isset($_POST['confirmo_download_logs'])) {
+            if (!current_user_can('manage_options')) {
+                wp_die(esc_html__('You do not have permission to download these logs.', 'confirmo-for-woocommerce'), '', ['response' => 403]);
+            }
+            check_admin_referer('confirmo_download_logs');
+
             $logs = $wpdb->get_results(
                 $wpdb->prepare(
                     "SELECT * FROM %i ORDER BY time ASC",
@@ -331,6 +364,11 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $table_name = $this->wpdb->prefix . "confirmo_logs";
 
         if (isset($_POST['action']) && $_POST['action'] === 'confirmo_delete_logs') {
+            if (!current_user_can('manage_options')) {
+                wp_die(esc_html__('You do not have permission to delete these logs.', 'confirmo-for-woocommerce'), '', ['response' => 403]);
+            }
+            check_admin_referer('confirmo_delete_logs');
+
             $wpdb = $this->wpdb;
 
             $wpdb->query(
@@ -575,14 +613,15 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             }
 
             // Validation callback password
-            if (!empty($this->callbackPassword)) {
-                $signature = hash('sha256', $json . $this->callbackPassword);
-                if (!isset($_SERVER['HTTP_BP_SIGNATURE']) || $_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
-                    $this->addDebugLog(null, "Confirmo: Signature validation failed!", 'handleNotification');
-                    wp_die('Invalid signature', '', ['response' => 403]);
-                }
-            } else {
-                $this->addDebugLog(null, "Confirmo: No callback password set, proceeding without validation.", 'handleNotification');
+            if ($this->callbackPassword === '') {
+                $this->addDebugLog(null, "Confirmo: No callback password set, callback rejected.", 'handleNotification');
+                wp_die('Callback password not configured', '', ['response' => 403]);
+            }
+
+            $signature = hash('sha256', $json . $this->callbackPassword);
+            if (!isset($_SERVER['HTTP_BP_SIGNATURE']) || !hash_equals($signature, (string) $_SERVER['HTTP_BP_SIGNATURE'])) {
+                $this->addDebugLog(null, "Confirmo: Signature validation failed!", 'handleNotification');
+                wp_die('Invalid signature', '', ['response' => 403]);
             }
 
             $data = json_decode($json, true);
