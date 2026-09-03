@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # WooCommerce Subscriptions is a paid extension, so it cannot be fetched
       # here. Set the WCS_ZIP_URL secret to a copy in storage the organisation
