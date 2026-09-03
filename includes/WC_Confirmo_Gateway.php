@@ -14,6 +14,9 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
  */
 class WC_Confirmo_Gateway extends WC_Payment_Gateway
 {
+    /** The Confirmo payment URL, kept on the order so admin, emails and the thank-you page can offer it. */
+    const REDIRECT_URL_META = '_confirmo_redirect_url';
+
     protected string $apiKey;
     protected ?string $settlementCurrency;
     protected string $callbackPassword;
@@ -420,6 +423,28 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     }
 
     /**
+     * Reads the Confirmo payment URL through order CRUD, which resolves whichever
+     * order storage the store is using.
+     *
+     * Falls back to post meta for orders placed before this version by a store
+     * already on High-Performance Order Storage: those were written with
+     * update_post_meta(), so CRUD does not see them. Safe to drop once no such
+     * order can still be awaiting payment.
+     *
+     * @param $order
+     */
+    private function redirectUrlFor($order): string
+    {
+        if (!$order instanceof WC_Order) {
+            return '';
+        }
+
+        $url = (string) $order->get_meta(self::REDIRECT_URL_META);
+
+        return $url !== '' ? $url : (string) get_post_meta($order->get_id(), self::REDIRECT_URL_META, true);
+    }
+
+    /**
      * Adds invoice URL to edit order page to WC admin
      *
      * @param $order
@@ -427,7 +452,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
      */
     public function addUrlToEditOrder($order): void
     {
-        $confirmo_redirect_url = get_post_meta($order->get_id(), '_confirmo_redirect_url', true);
+        $confirmo_redirect_url = $this->redirectUrlFor($order);
 
         if ($confirmo_redirect_url) {
             echo '<p><strong>' . esc_html(__('Confirmo Payment URL:', 'confirmo-for-woocommerce')) . '</strong> <a href="' . esc_url($confirmo_redirect_url) . '" target="_blank">' . esc_url($confirmo_redirect_url) . '</a></p>';
@@ -446,7 +471,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     public function addUrlToEmails($order, $sent_to_admin, $plain_text, $email): void
     {
         if ($email->id == 'new_order' || $email->id == 'customer_on_hold_order') {
-            $confirmo_redirect_url = get_post_meta($order->get_id(), '_confirmo_redirect_url', true);
+            $confirmo_redirect_url = $this->redirectUrlFor($order);
 
             if ($confirmo_redirect_url) {
                 echo $plain_text ? esc_html(__('Confirmo Payment URL:', 'confirmo-for-woocommerce')) . esc_url($confirmo_redirect_url) . "\n" : "<p><strong>" . esc_html(__('Confirmo Payment URL:', 'confirmo-for-woocommerce')) . "</strong> <a href='" . esc_url($confirmo_redirect_url) . "'>" . esc_url($confirmo_redirect_url) . "</a></p>";
@@ -497,7 +522,16 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     }
 
     /**
-     * Compatibility with WooCommerce Blocks
+     * Compatibility with WooCommerce Blocks and High-Performance Order Storage.
+     *
+     * WooCommerce resolves the plugin from the file path given here, so it has to
+     * be the plugin's entry file — `__FILE__` names this include, which matches no
+     * installed plugin and left the declaration ignored.
+     *
+     * HPOS is declared because order data is read and written through order CRUD,
+     * which resolves whichever storage the store uses. It is default-on for new
+     * installs, and without the declaration WooCommerce lists the plugin as
+     * incompatible on every one of them.
      *
      * @return void
      */
@@ -505,8 +539,8 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     {
         // Check if the required class exists
         if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
-            // Declare compatibility for 'cart_checkout_blocks'
-            FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+            FeaturesUtil::declare_compatibility('cart_checkout_blocks', $this->pluginBaseDir, true);
+            FeaturesUtil::declare_compatibility('custom_order_tables', $this->pluginBaseDir, true);
         }
     }
 
@@ -569,7 +603,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     {
         if (!$order) return $original_text;
 
-        $confirmo_redirect_url = get_post_meta($order->get_id(), '_confirmo_redirect_url', true);
+        $confirmo_redirect_url = $this->redirectUrlFor($order);
         $status = $order->get_status();
         $custom_text = '';
 
@@ -747,7 +781,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         }
 
         $confirmo_redirect_url = $response_data['url'];
-        update_post_meta($order_id, '_confirmo_redirect_url', $confirmo_redirect_url);
+        $order->update_meta_data(self::REDIRECT_URL_META, $confirmo_redirect_url);
 
         // Change: Set initial order status to 'pending'
         $order->update_status('pending', __('Awaiting Confirmo payment.', 'confirmo-for-woocommerce'));
