@@ -7,7 +7,6 @@
 class WC_Confirmo_Subscribe_Gateway extends WC_Payment_Gateway
 {
     const ORDER_META_SUBSCRIPTION_ID = '_confirmo_subscription_id';
-    const USER_META_SUBSCRIPTION_ID = '_confirmo_subscription_id';
 
     /** Kept so a customer returning to an unpaid order is sent back to the
      * same subscription instead of opening another one. */
@@ -17,7 +16,7 @@ class WC_Confirmo_Subscribe_Gateway extends WC_Payment_Gateway
     {
         $this->id = 'confirmo_subscribe';
         $this->method_title = __('Confirmo Subscribe', 'confirmo-for-woocommerce');
-        $this->method_description = __('Sell recurring Confirmo Subscribe plans. Availability is controlled by the Subscribe module toggle in Confirmo Payment settings.', 'confirmo-for-woocommerce');
+        $this->method_description = __('Sell recurring Confirmo Subscribe plans. Needs the Subscribe module enabled in Confirmo Payment settings as well as this gateway.', 'confirmo-for-woocommerce');
         $this->title = __('Subscribe with crypto (Confirmo)', 'confirmo-for-woocommerce');
         $this->has_fields = false;
 
@@ -29,8 +28,31 @@ class WC_Confirmo_Subscribe_Gateway extends WC_Payment_Gateway
         // offered to customers; see WC_Confirmo_Subscribe_Wcs.
         $this->supports = WC_Confirmo_Subscribe_Capabilities::SUPPORTS;
 
-        // The module toggle governs whether this gateway loads at all.
-        $this->enabled = 'yes';
+        // Two switches, and both have to be on: the module toggle in Confirmo
+        // Payment settings decides whether this gateway loads at all, and the
+        // usual WooCommerce > Payments toggle decides whether it is offered.
+        // Hard-coding `enabled` left that second toggle looking functional while
+        // doing nothing.
+        //
+        // Off until the merchant says otherwise. Nothing is offered to a
+        // subscriber by a module having been loaded.
+        $this->init_form_fields();
+        $this->init_settings();
+        $this->enabled = $this->get_option('enabled', 'no');
+    }
+
+    public function init_form_fields(): void
+    {
+        $this->form_fields = [
+            'enabled' => [
+                'title' => __('Enable/Disable', 'confirmo-for-woocommerce'),
+                'type' => 'checkbox',
+                'label' => __('Offer Confirmo Subscribe at checkout', 'confirmo-for-woocommerce'),
+                'default' => 'no',
+                'description' => __('The Subscribe module must also be enabled in Confirmo Payment settings.', 'confirmo-for-woocommerce'),
+                'desc_tip' => true,
+            ],
+        ];
     }
 
     /**
@@ -179,12 +201,6 @@ class WC_Confirmo_Subscribe_Gateway extends WC_Payment_Gateway
         WC_Confirmo_Subscribe_Link::link($wcsSubscription, $subscriptionId);
         $order->update_status('pending', __('Awaiting Confirmo Subscribe checkout.', 'confirmo-for-woocommerce'));
         $order->save();
-
-        // Keyed to the user so access resolves by user, never by email.
-        $userId = (int) $order->get_user_id();
-        if ($userId > 0) {
-            add_user_meta($userId, self::USER_META_SUBSCRIPTION_ID, $subscriptionId);
-        }
 
         return [
             'result' => 'success',

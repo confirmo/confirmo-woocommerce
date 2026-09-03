@@ -61,6 +61,15 @@ class WC_Confirmo_Subscribe_Settings
             . '</p></div>';
 
         echo '<p>' . esc_html__('Sell Confirmo Subscribe plans from your WooCommerce store. This module is off by default and does not affect the Confirmo Checkout payment gateway.', 'confirmo-for-woocommerce') . '</p>';
+
+        // Both switches are off to begin with, so saying so here is what stops a
+        // merchant enabling the module and wondering why checkout is unchanged.
+        printf(
+            '<p>%s <a href="%s">%s</a></p>',
+            esc_html__('Enabling the module here loads the gateway. To offer it to subscribers, also enable Confirmo Subscribe in', 'confirmo-for-woocommerce'),
+            esc_url(admin_url('admin.php?page=wc-settings&tab=checkout')),
+            esc_html__('WooCommerce payment methods', 'confirmo-for-woocommerce')
+        );
     }
 
     public static function enabledFieldCallback(): void

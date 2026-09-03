@@ -37,6 +37,32 @@ class SubscriptionCheckoutTest extends ConfirmoTestCase
         );
     }
 
+    /**
+     * WooCommerce > Payments shows this gateway with the usual on/off switch.
+     * Hard-coding `enabled` left that switch looking functional while changing
+     * nothing, so a merchant who turned it off was still selling subscriptions.
+     */
+    public function testTurningTheGatewayOffInWooCommercePaymentsTakesEffect(): void
+    {
+        update_option('woocommerce_confirmo_subscribe_settings', ['enabled' => 'no']);
+
+        $gateway = new WC_Confirmo_Subscribe_Gateway();
+
+        self::assertSame('no', $gateway->enabled);
+        self::assertFalse($gateway->is_available(), 'a gateway turned off must not be offered');
+    }
+
+    /** Nothing is offered to a subscriber until the merchant asks for it. */
+    public function testTheGatewayIsOffUntilTheMerchantEnablesIt(): void
+    {
+        delete_option('woocommerce_confirmo_subscribe_settings');
+
+        $gateway = new WC_Confirmo_Subscribe_Gateway();
+
+        self::assertSame('no', $gateway->enabled);
+        self::assertFalse($gateway->is_available());
+    }
+
     /** Quantity multiplies one subscription rather than opening several. */
     public function testQuantityIsBilledAsOneSubscriptionAtTheMultipliedAmount(): void
     {

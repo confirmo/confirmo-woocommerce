@@ -53,7 +53,11 @@ abstract class ConfirmoTestCase extends TestCase
         // Saved and restored explicitly, not left to the transaction: WooCommerce
         // and WCS issue statements that commit it implicitly, which is how a test
         // run once replaced a developer's real API key with the fixture below.
-        foreach (['confirmo_gate_config_options', 'confirmo_subscribe_config_options'] as $option) {
+        foreach ([
+            'confirmo_gate_config_options',
+            'confirmo_subscribe_config_options',
+            'woocommerce_confirmo_subscribe_settings',
+        ] as $option) {
             $this->savedOptions[$option] = get_option($option);
         }
 

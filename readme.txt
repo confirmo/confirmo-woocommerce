@@ -4,7 +4,7 @@ Contributors: confirmoadm
 Tags: Confirmo, Cryptocurrency, Crypto, Crypto Payments, Payment Gateway
 Requires at least: 6.2
 Tested up to: 6.7
-Stable tag: 2.9.0
+Stable tag: 2.10.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -99,10 +99,14 @@ The most up-to-date Terms & Conditions are available on the Confirmo website in 
 
 == Changelog ==
 
+= 2.10.0 =
+* Adds Confirmo Subscribe, an optional module for selling recurring plans through WooCommerce Subscriptions. Off by default; the Confirmo Checkout gateway is unaffected.
+* Declares support for WooCommerce's High-Performance Order Storage.
+
 = 2.9.0 =
-* Latest release. See the full release notes at https://github.com/confirmo/confirmo-woocommerce/releases
+* See the full release notes at https://github.com/confirmo/confirmo-woocommerce/releases
 
 == Upgrade Notice ==
 
-= 2.9.0 =
-Download the latest release from https://github.com/confirmo/confirmo-woocommerce/releases and upload it via Plugins - Add New - Upload Plugin. Settings are preserved.
+= 2.10.0 =
+Download the latest release from https://github.com/confirmo/confirmo-woocommerce/releases and upload it via Plugins - Add New - Upload Plugin. Settings are preserved. Confirmo Subscribe stays off until you enable it in Confirmo Payment settings.
