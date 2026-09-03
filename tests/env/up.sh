@@ -77,6 +77,12 @@ else
 EOF
 fi
 
+# Loads before regular plugins, which is the only moment early enough to answer
+# the module's toggle before it reads it. Dormant unless the probe asks for it.
+echo "==> Test helpers"
+docker exec confirmo-tests-cli mkdir -p /var/www/html/wp-content/mu-plugins
+docker cp "$ENV_DIR/mu-plugins/." "confirmo-tests-cli:/var/www/html/wp-content/mu-plugins/"
+
 echo "==> Store settings"
 # The Subscribe module loads its classes at boot, so it has to be on before the
 # tests run — flipping the option from a test would be too late.
