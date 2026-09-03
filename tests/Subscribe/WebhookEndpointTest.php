@@ -102,6 +102,54 @@ class WebhookEndpointTest extends SubscribeTestCase
         self::assertSame(400, $this->postWebhook($body, $this->signWebhook('evt-junk', $body)));
     }
 
+    /**
+     * `notifyUrl` goes to Confirmo before the returned id is written against the
+     * WooCommerce subscription, so an event minted in that gap arrives before
+     * there is anything to apply it to. Asking for a redelivery is what makes
+     * that self-correcting; answering 200 threw away the first event of a
+     * subscription's life.
+     */
+    public function testAFreshEventForAnUnlinkedSubscriptionAsksForARedelivery(): void
+    {
+        $body = wp_json_encode([
+            'type' => 'subscription.created',
+            'resourceId' => 'sub-not-linked-yet',
+            'sequence' => 1,
+            'timestamp' => gmdate('c'),
+        ]);
+
+        self::assertSame(503, $this->postWebhook($body, $this->signWebhook('evt-early', $body)));
+    }
+
+    /**
+     * Past that window it is not a checkout in progress: the subscription was
+     * deleted here, or another store is using this notification URL. Retrying
+     * only earns a dead-letter entry per attempt, so it is accepted and logged.
+     */
+    public function testAnOldEventForAnUnknownSubscriptionIsAcceptedRatherThanRetriedForever(): void
+    {
+        $body = wp_json_encode([
+            'type' => 'subscription.canceled',
+            'resourceId' => 'sub-long-gone',
+            'sequence' => 1,
+            'timestamp' => gmdate('c', time() - (WC_Confirmo_Subscribe_Webhook::UNKNOWN_SUBSCRIPTION_RETRY_WINDOW + 3600)),
+        ]);
+
+        self::assertSame(200, $this->postWebhook($body, $this->signWebhook('evt-gone', $body)));
+    }
+
+    /** No usable timestamp means we cannot tell the two apart, so assume the race. */
+    public function testAnEventWithNoTimestampAsksForARedelivery(): void
+    {
+        $body = wp_json_encode([
+            'type' => 'subscription.created',
+            'resourceId' => 'sub-no-timestamp',
+            'sequence' => 1,
+        ]);
+
+        self::assertSame(503, $this->postWebhook($body, $this->signWebhook('evt-nots', $body)));
+    }
+
     /** The whole path, end to end: signed delivery in, subscription moved. */
     public function testASignedDeliveryIsAcceptedAndApplied(): void
     {

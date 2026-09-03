@@ -108,9 +108,21 @@ class WebhookTest extends SubscribeTestCase
         self::assertSame('on-hold', wcs_get_subscription($subscription->get_id())->get_status());
     }
 
-    public function testAnEventForAnUnknownSubscriptionChangesNothing(): void
+    /**
+     * Whatever it does about redelivery, an event for a subscription this store
+     * does not hold must not go asking Confirmo about it.
+     */
+    public function testAnEventForAnUnknownSubscriptionIsNotLookedUp(): void
     {
-        $this->process(['type' => 'subscription.canceled', 'resourceId' => 'never-heard-of-it', 'sequence' => 1], 'evt-unknown');
+        try {
+            $this->process(
+                ['type' => 'subscription.canceled', 'resourceId' => 'never-heard-of-it', 'sequence' => 1],
+                'evt-unknown'
+            );
+        } catch (ConfirmoWpDie $e) {
+            // Asking for a redelivery is the expected answer; see
+            // WebhookEndpointTest for the status codes.
+        }
 
         self::assertNull($this->requestTo('/api/v3/subscriptions/never-heard-of-it'));
     }

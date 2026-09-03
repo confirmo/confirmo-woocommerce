@@ -32,6 +32,13 @@ class WC_Confirmo_Subscribe_Webhook
      */
     const TIMESTAMP_TOLERANCE = 86400;
 
+    /**
+     * How long an event for a subscription this store does not hold is worth
+     * redelivering. Long enough to outlast a checkout still being linked, short
+     * enough that a subscription genuinely gone from here stops being retried.
+     */
+    const UNKNOWN_SUBSCRIPTION_RETRY_WINDOW = 1800;
+
     public static function register(): void
     {
         add_filter('query_vars', [self::class, 'addQueryVar']);
@@ -116,7 +123,7 @@ class WC_Confirmo_Subscribe_Webhook
 
         $subscription = WC_Confirmo_Subscribe_Link::forConfirmoId($resourceId);
         if (!$subscription) {
-            WC_Confirmo_Subscribe_Log::error('no WooCommerce subscription holds Confirmo id ' . $resourceId . ' (event ' . $eventId . ', ' . $type . ')');
+            self::refuseUnknownSubscription($event, $eventId, $type, $resourceId);
             return;
         }
 
@@ -176,6 +183,64 @@ class WC_Confirmo_Subscribe_Webhook
             $subscription->update_meta_data(WC_Confirmo_Subscribe_Link::META_LAST_SEQUENCE, $sequence);
         }
         self::recordApplied($subscription, $eventId);
+    }
+
+    /**
+     * An event whose subscription this store does not hold.
+     *
+     * Usually a matter of timing rather than a fault: `notifyUrl` is sent to
+     * Confirmo before `process_payment()` writes down which WooCommerce
+     * subscription the returned id belongs to, so an event minted in that gap
+     * arrives before there is anything to apply it to. Asking for a retry is
+     * exactly right there, and answering 200 threw the event away instead.
+     *
+     * The other reasons are permanent — the subscription was deleted, or a copy
+     * of the store is pointing at the same URL — and retrying those achieves
+     * nothing but a dead-letter entry per attempt. So the event's own age
+     * separates them: young enough to be the race, retry; older than that, log
+     * and accept, because it is not going to resolve.
+     */
+    private static function refuseUnknownSubscription(array $event, string $eventId, string $type, string $resourceId): void
+    {
+        $age = self::eventAge($event);
+
+        if ($age !== null && $age > self::UNKNOWN_SUBSCRIPTION_RETRY_WINDOW) {
+            WC_Confirmo_Subscribe_Log::error(sprintf(
+                'no WooCommerce subscription holds Confirmo id %s (event %s, %s), and the event is %d minutes old, '
+                . 'so it is not a checkout still in progress. Accepted to stop it being redelivered — the subscription '
+                . 'was probably deleted here, or another store is using this notification URL.',
+                $resourceId,
+                $eventId,
+                $type,
+                (int) round($age / 60)
+            ));
+            return;
+        }
+
+        WC_Confirmo_Subscribe_Log::error(sprintf(
+            'no WooCommerce subscription holds Confirmo id %s yet (event %s, %s); asking Confirmo to redeliver',
+            $resourceId,
+            $eventId,
+            $type
+        ));
+        self::respond(503, 'subscription not linked yet; retry');
+    }
+
+    /**
+     * How long ago Confirmo minted the event, from its own `timestamp`. Null
+     * when absent or unreadable, which is treated as "cannot tell" and so as
+     * worth retrying.
+     */
+    private static function eventAge(array $event): ?int
+    {
+        $timestamp = $event['timestamp'] ?? null;
+        if (!is_string($timestamp) || $timestamp === '') {
+            return null;
+        }
+
+        $minted = strtotime($timestamp);
+
+        return $minted === false ? null : max(0, time() - $minted);
     }
 
     /** Either the event or the subscription it belongs to has to say which cycle was charged. */
