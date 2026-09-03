@@ -7,7 +7,7 @@
  * charged — the worst failure this integration has, because nothing in
  * WooCommerce looks wrong.
  */
-class CancellationTest extends ConfirmoTestCase
+class CancellationTest extends SubscribeTestCase
 {
     public function testCancellingInWooCommerceCancelsAtConfirmo(): void
     {

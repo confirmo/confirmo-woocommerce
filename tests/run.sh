@@ -1,39 +1,37 @@
 #!/usr/bin/env bash
 #
-# Runs the suite inside a WordPress container that has WooCommerce and
-# WooCommerce Subscriptions active.
+# Runs the suite against a WordPress with WooCommerce active.
 #
 #   tests/run.sh                          # everything
 #   tests/run.sh --testsuite invoicing    # one suite
 #   tests/run.sh --filter Webhook         # one test
 #
-# The container name defaults to confirmo-wp; override it with
-# CONFIRMO_WP_CONTAINER. The plugin path inside the container is derived from
-# WordPress itself, so a differently named plugin directory still works.
+# From a clean checkout this needs nothing but Docker: it builds its own
+# throwaway WordPress the first time (tests/env/up.sh) and reuses it after.
 #
-# To run against a WordPress you host yourself instead of a container, call
-# PHPUnit directly with WP_ROOT pointing at it:
+# WooCommerce Subscriptions is a paid extension and cannot be installed for you,
+# so the Subscribe tests skip unless you supply a copy — see tests/README.md.
+#
+# CONFIRMO_WP_CONTAINER points at a WordPress container you already have. To run
+# against a WordPress you host yourself, call PHPUnit directly instead:
 #
 #   WP_ROOT=/srv/www/wordpress phpunit -c phpunit.xml.dist
 
 set -euo pipefail
 
-CONTAINER="${CONFIRMO_WP_CONTAINER:-confirmo-wp}"
+CONTAINER="${CONFIRMO_WP_CONTAINER:-confirmo-tests-wp}"
 PHPUNIT_VERSION="9.6.36"
 PHAR_IN_CONTAINER="/tmp/phpunit.phar"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
-    cat >&2 <<EOF
-Container '$CONTAINER' is not running.
+    if [ -n "${CONFIRMO_WP_CONTAINER:-}" ]; then
+        echo "Container '$CONTAINER' is not running." >&2
+        exit 1
+    fi
 
-The suite needs a WordPress with WooCommerce and WooCommerce Subscriptions
-active. Start yours, then either name it CONFIRMO_WP_CONTAINER=<name>, or run
-PHPUnit directly against a non-containerised install:
-
-  WP_ROOT=/path/to/wordpress phpunit -c phpunit.xml.dist
-EOF
-    exit 1
+    echo "No test environment yet — building one."
+    "$ROOT/tests/env/up.sh"
 fi
 
 if ! docker exec "$CONTAINER" test -f "$PHAR_IN_CONTAINER"; then
@@ -65,6 +63,18 @@ done
 docker exec "$CONTAINER" rm -rf "$PLUGIN_DIR/tests"
 docker cp "$ROOT/tests" "$CONTAINER:$PLUGIN_DIR/" >/dev/null
 docker exec "$CONTAINER" chown -R www-data:www-data "$PLUGIN_DIR"
+
+# The bootstrap loads the plugin through WordPress, so it has to be active.
+# Provisioning uses the wordpress:cli service; a container someone brought
+# themselves may have wp-cli inside it instead.
+PLUGIN_SLUG="$(basename "$ROOT")"
+if docker ps --format '{{.Names}}' | grep -qx confirmo-tests-cli; then
+    docker exec confirmo-tests-cli \
+        wp --path=/var/www/html plugin activate "$PLUGIN_SLUG" >/dev/null 2>&1 || true
+elif docker exec "$CONTAINER" test -f /usr/local/bin/wp 2>/dev/null; then
+    docker exec -u www-data "$CONTAINER" \
+        wp --path=/var/www/html plugin activate "$PLUGIN_SLUG" >/dev/null 2>&1 || true
+fi
 
 exec docker exec -w "$PLUGIN_DIR" "$CONTAINER" \
     php "$PHAR_IN_CONTAINER" --configuration "$PLUGIN_DIR/phpunit.xml.dist" "$@"

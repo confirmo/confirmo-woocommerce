@@ -7,7 +7,7 @@
  * The amount is the whole point. Confirmo bills it every cycle for the life of
  * the mandate, so sending the wrong number is not a bug that shows up once.
  */
-class SubscriptionCheckoutTest extends ConfirmoTestCase
+class SubscriptionCheckoutTest extends SubscribeTestCase
 {
     public function testCheckoutOpensAConfirmoSubscriptionForTheRecurringTotal(): void
     {

@@ -9,7 +9,7 @@
  * Confirmo drives — double billing records, and customers on hold while Confirmo
  * is charging them happily.
  */
-class CapabilitiesTest extends ConfirmoTestCase
+class CapabilitiesTest extends SubscribeTestCase
 {
     public function testTheGatewayOwnsTheBillingClock(): void
     {

@@ -9,7 +9,7 @@
  * would have done happens here instead. If this stops working, renewals simply
  * stop appearing and nobody finds out until a customer complains.
  */
-class ProjectionTest extends ConfirmoTestCase
+class ProjectionTest extends SubscribeTestCase
 {
     public function testActivationPaysTheParentOrderAndStartsTheSubscription(): void
     {

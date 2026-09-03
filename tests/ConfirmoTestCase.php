@@ -104,7 +104,12 @@ abstract class ConfirmoTestCase extends TestCase
         remove_filter('pre_wp_mail', [$this, 'swallowMail'], 10);
 
         wp_cache_flush();
-        delete_transient(WC_Confirmo_Subscribe_Signature::JWKS_TRANSIENT);
+
+        // The Subscribe module does not load without WooCommerce Subscriptions,
+        // so its classes are absent on a store that only runs the Checkout tests.
+        if (class_exists('WC_Confirmo_Subscribe_Signature')) {
+            delete_transient(WC_Confirmo_Subscribe_Signature::JWKS_TRANSIENT);
+        }
 
         parent::tearDown();
     }

@@ -11,7 +11,7 @@
  * `process()`. Between them every line of the request path is covered except the
  * `exit` itself.
  */
-class WebhookTest extends ConfirmoTestCase
+class WebhookTest extends SubscribeTestCase
 {
     public function testARealSignatureVerifiesAgainstThePublishedKey(): void
     {
