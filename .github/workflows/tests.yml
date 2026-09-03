@@ -1,0 +1,42 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  phpunit:
+    name: PHPUnit against WordPress and WooCommerce
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      # WooCommerce Subscriptions is a paid extension, so it cannot be fetched
+      # here. Set the WCS_ZIP_URL secret to a copy in storage the organisation
+      # controls and the Confirmo Subscribe tests run too; without it they skip
+      # and the Confirmo Checkout tests still run. See tests/README.md.
+      - name: Build the test environment
+        env:
+          WCS_ZIP_URL: ${{ secrets.WCS_ZIP_URL }}
+        run: tests/env/up.sh
+
+      - name: Run the suite
+        run: tests/run.sh
+
+      - name: Report what was skipped
+        if: always()
+        env:
+          WCS_ZIP_URL: ${{ secrets.WCS_ZIP_URL }}
+        run: |
+          if [ -z "$WCS_ZIP_URL" ]; then
+            echo "::warning title=Subscribe tests skipped::WooCommerce Subscriptions was not available, so only the Checkout tests ran. Set the WCS_ZIP_URL secret to cover Confirmo Subscribe as well — see tests/README.md."
+          fi
+
+      - name: WordPress log, if the suite failed
+        if: failure()
+        run: docker logs confirmo-tests-wp 2>&1 | tail -100

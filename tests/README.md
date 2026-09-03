@@ -53,10 +53,25 @@ WCS_ZIP=~/Downloads/woocommerce-subscriptions.zip tests/env/up.sh
 tests/run.sh
 ```
 
-`WCS_ZIP_URL` takes a URL instead, which is how CI should get it: put the same
-zip somewhere Confirmo controls — an S3 bucket or the GitLab package registry —
-and point the variable at it. Then the Subscribe tests run everywhere with no
-manual step and nothing external in the path.
+`WCS_ZIP_URL` takes a URL instead, which is how CI gets it: put the same zip
+somewhere Confirmo controls — an S3 bucket or the GitLab package registry — and
+point the variable at it. Then the Subscribe tests run everywhere with no manual
+step and nothing external in the path.
+
+## Continuous integration
+
+`.github/workflows/tests.yml` runs the suite on every push to master and on
+every pull request. Public repository, standard runners, so it costs nothing.
+
+Add a repository secret named **`WCS_ZIP_URL`** pointing at the zip and the
+whole suite runs. Without it the workflow still runs and passes, covering the
+Checkout gateway and the module toggle, and prints a warning saying which tests
+were skipped and why — so a green tick never quietly means less than it looks.
+
+Worth knowing which side of that line things fall: the webhook endpoint tests
+need the Subscribe module loaded, and the module does not load without
+WooCommerce Subscriptions. So until the secret exists, CI covers the Checkout
+half and the toggle, not the webhook path.
 
 Version matters. Keep the zip current, because these are security-relevant
 releases: 9.1.0 was itself a critical patch, and the plugin declares a minimum

@@ -66,7 +66,16 @@ elif [ -n "${WCS_ZIP:-}" ]; then
     docker cp "$WCS_ZIP" "confirmo-tests-cli:/tmp/wcs.zip"
     wp plugin install /tmp/wcs.zip --activate
 elif [ -n "${WCS_ZIP_URL:-}" ]; then
-    wp plugin install "$WCS_ZIP_URL" --activate
+    # Fetched with curl, then installed from the file, rather than handing the
+    # URL to wp-cli. WordPress validates a download URL and refuses hosts with
+    # no dot and private addresses, which rules out plenty of legitimate
+    # locations; and a failure here says what went wrong instead of "a valid URL
+    # was not provided".
+    echo "    fetching from WCS_ZIP_URL"
+    docker exec confirmo-tests-cli sh -c \
+        "curl -fsSL -o /tmp/wcs.zip '$WCS_ZIP_URL'" \
+        || { echo "    could not download WCS_ZIP_URL" >&2; exit 1; }
+    wp plugin install /tmp/wcs.zip --activate
 else
     cat <<'EOF'
     Not installed: WooCommerce Subscriptions is a paid extension, so it cannot be
