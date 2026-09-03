@@ -263,11 +263,20 @@ class WC_Confirmo_Subscribe_Webhook
         return $headers;
     }
 
+    /**
+     * Ends the request through `wp_die()` rather than `exit`, as the Checkout
+     * callback does. Same status codes, and the dispatcher reads nothing else —
+     * but `wp_die()` runs through a filter, so the handler can be driven by a
+     * test. With a bare `exit` none of these paths could be covered: a rejected
+     * signature, a timestamp out of tolerance, an unreadable JWKS, or the
+     * endpoint answering at all.
+     */
     private static function respond(int $status, string $message): void
     {
-        status_header($status);
-        header('Content-Type: text/plain');
-        echo esc_html($message);
-        exit;
+        wp_die(
+            esc_html($message),
+            '',
+            ['response' => $status, 'exit' => true]
+        );
     }
 }

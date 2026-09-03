@@ -33,6 +33,9 @@ abstract class ConfirmoTestCase extends TestCase
     /** @var array<string, mixed> the store's own settings, put back in tearDown */
     private $savedOptions = [];
 
+    /** @var bool whether requests to this site itself may really travel */
+    private $allowLoopback = false;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -127,6 +130,31 @@ abstract class ConfirmoTestCase extends TestCase
         $this->httpStubs[$urlFragment] = ['status' => $status, 'body' => $body];
     }
 
+    /**
+     * Lets this test make a real request to its own WordPress, and returns the
+     * URL to use: inside a container the site's public port is not reachable, so
+     * the request goes to the loopback address carrying the site's own Host.
+     *
+     * @return array{0: string, 1: array<string, string>} url and headers
+     */
+    protected function loopbackRequestTo(string $siteUrl): array
+    {
+        $this->allowLoopback = true;
+
+        $parts = wp_parse_url($siteUrl);
+        $host = ($parts['host'] ?? 'localhost') . (isset($parts['port']) ? ':' . $parts['port'] : '');
+        $path = ($parts['path'] ?? '/') . (isset($parts['query']) ? '?' . $parts['query'] : '');
+
+        return ['http://127.0.0.1' . $path, ['Host' => $host]];
+    }
+
+    private function isThisSite(string $url): bool
+    {
+        $host = wp_parse_url($url, PHP_URL_HOST);
+
+        return in_array($host, ['127.0.0.1', 'localhost', wp_parse_url(home_url(), PHP_URL_HOST)], true);
+    }
+
     /** @return array|null the decoded request body sent to the first matching URL */
     protected function requestTo(string $urlFragment): ?array
     {
@@ -152,6 +180,14 @@ abstract class ConfirmoTestCase extends TestCase
             $body = is_array($decoded) ? $decoded : [];
         }
         $this->httpCalls[] = ['url' => $url, 'body' => $body];
+
+        // A request to this very site is the one thing that must really travel:
+        // it is how the webhook endpoint's routing gets tested at all. Opted in
+        // per test, so an unstubbed call to Confirmo still fails.
+        if ($this->allowLoopback && $this->isThisSite($url)) {
+            array_pop($this->httpCalls);
+            return $preempt;
+        }
 
         foreach ($this->httpStubs as $fragment => $response) {
             if (strpos($url, $fragment) !== false) {
@@ -251,6 +287,42 @@ abstract class ConfirmoTestCase extends TestCase
         }
 
         $this->fail('handleNotification() returned without answering the request');
+    }
+
+    // ── The Subscribe webhook endpoint ─────────────────────────────────────
+
+    /**
+     * Drives the real `handle()` the way a Confirmo delivery does, and returns
+     * the HTTP status it answered with.
+     *
+     * @param array<string, string> $headers signature headers, as sent
+     */
+    protected function postWebhook(string $body, array $headers): int
+    {
+        global $wp_query;
+
+        $previousQuery = $wp_query;
+        $previousServer = $_SERVER;
+
+        $wp_query = new WP_Query();
+        $wp_query->query_vars[WC_Confirmo_Subscribe_Webhook::QUERY_VAR] = '1';
+
+        foreach ($headers as $name => $value) {
+            $_SERVER['HTTP_' . strtoupper(str_replace('-', '_', $name))] = $value;
+        }
+
+        try {
+            ConfirmoInputStream::with($body, static function () {
+                WC_Confirmo_Subscribe_Webhook::handle();
+            });
+        } catch (ConfirmoWpDie $e) {
+            return $e->status;
+        } finally {
+            $wp_query = $previousQuery;
+            $_SERVER = $previousServer;
+        }
+
+        $this->fail('handle() returned without answering the request');
     }
 
     // ── Fixtures ───────────────────────────────────────────────────────────
