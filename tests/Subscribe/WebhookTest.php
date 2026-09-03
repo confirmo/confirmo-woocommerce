@@ -115,6 +115,38 @@ class WebhookTest extends SubscribeTestCase
         self::assertNull($this->requestTo('/api/v3/subscriptions/never-heard-of-it'));
     }
 
+    /**
+     * A signature stays valid however long the timestamp sits from our clock, so
+     * a host whose clock has drifted must still verify its events. The tolerance
+     * only bounds how ancient a captured message may be; the sequence number is
+     * what stops a replay being applied.
+     */
+    public function testAnEventSignedOnAClockAnHourOutStillVerifies(): void
+    {
+        $body = wp_json_encode(['type' => 'subscription.activated', 'resourceId' => 'sub-1']);
+        $headers = $this->signWebhook('evt-skew', $body, time() - 3600);
+
+        self::assertTrue($this->verify($headers, $body));
+        self::assertLessThan(
+            WC_Confirmo_Subscribe_Webhook::TIMESTAMP_TOLERANCE,
+            3600,
+            'an hour of clock drift must be inside the tolerance, or genuine events are refused'
+        );
+    }
+
+    /** Past the tolerance it is refused — but retryably, never for good. */
+    public function testTheToleranceOutlastsTheDispatchersRetryLadder(): void
+    {
+        // The ladder runs to roughly a day; a retry must never be refused for
+        // arriving late, because a refusal the dispatcher reads as permanent
+        // costs the store the event and the merchant a cycle of revenue.
+        self::assertGreaterThanOrEqual(
+            24 * 3600,
+            WC_Confirmo_Subscribe_Webhook::TIMESTAMP_TOLERANCE,
+            'the tolerance must cover the whole retry ladder'
+        );
+    }
+
     // ── helpers ────────────────────────────────────────────────────────────
 
     private function verify(array $headers, string $body): bool

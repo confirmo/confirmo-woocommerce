@@ -16,6 +16,22 @@ class WC_Confirmo_Subscribe_Webhook
      */
     const SEEN_EVENTS_KEPT = 50;
 
+    /**
+     * How far a signed timestamp may sit from this server's clock.
+     *
+     * Deliberately generous. The event id and the sequence number are what
+     * actually stop a replayed event being applied — an old one carries an old
+     * sequence and is dropped whatever its timestamp says. This is the backstop
+     * that bounds how ancient a captured message may be, and a tight window here
+     * bought no security while turning an ordinary problem into a silent one: a
+     * WordPress host whose clock drifts by minutes rejected every genuine event,
+     * and the merchant's only symptom was payments never being recorded.
+     *
+     * Set past the dispatcher's retry ladder so a retry is never refused for
+     * being late either.
+     */
+    const TIMESTAMP_TOLERANCE = 86400;
+
     public static function register(): void
     {
         add_filter('query_vars', [self::class, 'addQueryVar']);
@@ -45,9 +61,21 @@ class WC_Confirmo_Subscribe_Webhook
             self::respond(400, 'missing signature headers');
         }
 
-        if (abs(time() - (int) $timestamp) > 300) {
-            WC_Confirmo_Subscribe_Log::error('rejected event ' . $id . ': timestamp ' . $timestamp . ' is outside the 5 minute window');
-            self::respond(400, 'stale timestamp');
+        $skew = abs(time() - (int) $timestamp);
+        if ($skew > self::TIMESTAMP_TOLERANCE) {
+            // Said plainly, because the cause is almost always this server's own
+            // clock and the symptom a merchant sees is payments never arriving.
+            WC_Confirmo_Subscribe_Log::error(sprintf(
+                'rejected event %s: its timestamp is %d minutes from this server\'s clock, outside the %d hour tolerance. '
+                . 'If Confirmo payments are not being recorded, check this server\'s clock (NTP) first.',
+                $id,
+                (int) round($skew / 60),
+                (int) (self::TIMESTAMP_TOLERANCE / 3600)
+            ));
+            // Retryable, not final. A 4xx has the dispatcher drop the event for
+            // good, so a clock briefly out of step used to cost the store real
+            // events — a lost payment event is a cycle of revenue.
+            self::respond(503, 'timestamp outside tolerance; retry');
         }
 
         // Failing to read the signing keys is our problem, not a bad signature,
