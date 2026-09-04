@@ -95,6 +95,84 @@ class WebhookEndpointTest extends SubscribeTestCase
         self::assertSame(503, $this->postWebhook($body, $headers));
     }
 
+    /**
+     * Confirmo rotates its signing key. While the old one was cached, every
+     * delivery signed with the new key failed — and a failed signature is
+     * answered 400, which the dispatcher treats as permanent, so a rotation cost
+     * the store every event in that window.
+     */
+    public function testAnEventSignedWithARotatedKeyIsAcceptedRatherThanRefused(): void
+    {
+        // Warm the cache with the first key, as a live store would have it.
+        $stale = wp_json_encode(['type' => 'subscription.activated', 'resourceId' => 'sub-1']);
+        $this->signWebhook('evt-warm', $stale);
+        self::assertNotEmpty(WC_Confirmo_Subscribe_Signature::publicKeys(), 'the first key should be cached');
+
+        // Confirmo rotates: a new keypair, published at the same JWKS.
+        $rotated = sodium_crypto_sign_keypair();
+        $this->stubApi('/.well-known/jwks.json', [
+            'keys' => [[
+                'kty' => 'OKP',
+                'crv' => 'Ed25519',
+                'x' => rtrim(strtr(base64_encode(sodium_crypto_sign_publickey($rotated)), '+/', '-_'), '='),
+            ]],
+        ]);
+
+        $product = $this->makeSubscriptionProduct('29.00', 'plan-monthly');
+        list($order, $subscription) = $this->makeSubscriptionOrder($product);
+        WC_Confirmo_Subscribe_Link::link($subscription, 'sub-rotated');
+        $order->payment_complete();
+        WC_Confirmo_Subscribe_Capabilities::whileProjecting(static function () use ($subscription) {
+            $subscription->update_status('active');
+        });
+
+        $this->stubApi('/api/v3/subscriptions/sub-rotated', [
+            'id' => 'sub-rotated',
+            'status' => 'PAST_DUE',
+            'cycleNumber' => 1,
+        ]);
+
+        $body = wp_json_encode([
+            'type' => 'subscription.past_due',
+            'resourceId' => 'sub-rotated',
+            'sequence' => 2,
+        ]);
+        $now = time();
+        $signature = sodium_crypto_sign_detached(
+            'evt-rotated.' . $now . '.' . $body,
+            sodium_crypto_sign_secretkey($rotated)
+        );
+
+        $status = $this->postWebhook($body, [
+            'webhook-id' => 'evt-rotated',
+            'webhook-timestamp' => (string) $now,
+            'webhook-signature' => 'v1a,' . base64_encode($signature),
+        ]);
+
+        self::assertSame(200, $status, 'a rotated key must be picked up rather than the event refused');
+        self::assertSame('on-hold', wcs_get_subscription($subscription->get_id())->get_status());
+    }
+
+    /** A stranger's signature must still be refused after the re-read. */
+    public function testARotationRetryDoesNotAcceptAStrangersSignature(): void
+    {
+        $body = wp_json_encode(['type' => 'subscription.activated', 'resourceId' => 'sub-1']);
+        $this->signWebhook('evt-warm2', $body);
+
+        $stranger = sodium_crypto_sign_keypair();
+        $now = time();
+        $signature = sodium_crypto_sign_detached(
+            'evt-stranger.' . $now . '.' . $body,
+            sodium_crypto_sign_secretkey($stranger)
+        );
+
+        self::assertSame(400, $this->postWebhook($body, [
+            'webhook-id' => 'evt-stranger',
+            'webhook-timestamp' => (string) $now,
+            'webhook-signature' => 'v1a,' . base64_encode($signature),
+        ]));
+    }
+
     public function testABodyThatIsNotJsonIsRefused(): void
     {
         $body = 'not json at all';

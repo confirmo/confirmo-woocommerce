@@ -89,12 +89,14 @@ class WC_Confirmo_Subscribe_Webhook
         // and the two must not share an answer: a 400 has the dispatcher drop the
         // event for good, so a blip fetching the JWKS would cost the store a real
         // event — and a lost payment event is a cycle of revenue.
-        $keys = WC_Confirmo_Subscribe_Signature::publicKeys();
-        if (empty($keys)) {
+        if (WC_Confirmo_Subscribe_Signature::publicKeys() === []) {
             self::respond(503, 'could not load signing keys; retry');
         }
 
-        if (!WC_Confirmo_Subscribe_Signature::verify($id, $timestamp, $body, $signature, $keys)) {
+        // Re-reads the keys once on failure, so a signing-key rotation does not
+        // cost the store every event signed with the new key before the cached
+        // copy expires.
+        if (!WC_Confirmo_Subscribe_Signature::verifyAllowingRotation($id, $timestamp, $body, $signature)) {
             WC_Confirmo_Subscribe_Log::error('rejected event ' . $id . ': no signature matched the published keys');
             self::respond(400, 'signature verification failed');
         }

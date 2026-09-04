@@ -50,9 +50,9 @@ class WC_Confirmo_Subscribe_Signature
      *
      * @return array<int, string> raw 32-byte Ed25519 public keys
      */
-    public static function publicKeys(): array
+    public static function publicKeys(bool $ignoreCache = false): array
     {
-        $document = get_transient(self::JWKS_TRANSIENT);
+        $document = $ignoreCache ? false : get_transient(self::JWKS_TRANSIENT);
         $cached = is_array($document);
 
         if (!$cached) {
@@ -66,16 +66,51 @@ class WC_Confirmo_Subscribe_Signature
 
         if ($keys === []) {
             WC_Confirmo_Subscribe_Log::error('the JWKS carried no usable Ed25519 key');
+            // Evicted, or a document with nothing usable in it would be re-read
+            // on every delivery until the transient expired.
+            delete_transient(self::JWKS_TRANSIENT);
             return [];
         }
 
         // Caching an empty or error document would keep every delivery failing
         // for the life of the transient.
-        if (!$cached) {
-            set_transient(self::JWKS_TRANSIENT, $document, self::JWKS_TTL);
-        }
+        set_transient(self::JWKS_TRANSIENT, $document, self::JWKS_TTL);
 
         return $keys;
+    }
+
+    /**
+     * Verifies against the cached keys, and on failure once more against freshly
+     * fetched ones.
+     *
+     * Confirmo rotates its signing key, and for the life of the cached copy
+     * every delivery signed with the new one failed against the old. Since a
+     * failed signature is answered with a 400, which a dispatcher treats as
+     * permanent, a rotation cost the store every event in that window — and a
+     * lost payment event is a cycle of revenue.
+     *
+     * Returns false only when the signature matches neither, which is when it is
+     * genuinely not Confirmo's.
+     */
+    public static function verifyAllowingRotation(string $id, string $timestamp, string $body, string $header): bool
+    {
+        $keys = self::publicKeys();
+        if ($keys === []) {
+            return false;
+        }
+
+        if (self::verify($id, $timestamp, $body, $header, $keys)) {
+            return true;
+        }
+
+        $rotated = self::publicKeys(true);
+        if ($rotated === [] || $rotated === $keys) {
+            return false;
+        }
+
+        WC_Confirmo_Subscribe_Log::error('signature did not match the cached JWKS; retrying against a freshly fetched one');
+
+        return self::verify($id, $timestamp, $body, $header, $rotated);
     }
 
     /**

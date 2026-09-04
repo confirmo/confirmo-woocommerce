@@ -73,9 +73,11 @@ need the Subscribe module loaded, and the module does not load without
 WooCommerce Subscriptions. So until the secret exists, CI covers the Checkout
 half and the toggle, not the webhook path.
 
-Version matters. Keep the zip current, because these are security-relevant
-releases: 9.1.0 was itself a critical patch, and the plugin declares a minimum
-supported version.
+Keep the zip current: these are security-relevant releases, and 9.1.0 was itself
+a critical patch. Note that the plugin declares no minimum WooCommerce
+Subscriptions version — it checks only that the extension is present — so the
+version CI tests against is a choice made here, not something the plugin
+enforces.
 
 ## Using a WordPress you already have
 

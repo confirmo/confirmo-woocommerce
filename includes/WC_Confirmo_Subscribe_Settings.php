@@ -70,6 +70,11 @@ class WC_Confirmo_Subscribe_Settings
             esc_url(admin_url('admin.php?page=wc-settings&tab=checkout')),
             esc_html__('WooCommerce payment methods', 'confirmo-for-woocommerce')
         );
+
+        // Switching off does not cancel anything: Confirmo keeps billing, and
+        // with this module off nothing here records those payments or relays a
+        // cancellation.
+        echo '<p>' . esc_html__('Switching the module off does not stop existing subscriptions. Confirmo continues to bill them, and while the module is off this store will not record those payments or pass on a cancellation — cancel them in Confirmo first.', 'confirmo-for-woocommerce') . '</p>';
     }
 
     public static function enabledFieldCallback(): void
