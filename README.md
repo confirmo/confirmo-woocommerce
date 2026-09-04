@@ -105,6 +105,20 @@ Settlements (recurrent withdrawals) are free, but bank fees apply.
 
 The most up‑to‑date Terms & Conditions are available on the Confirmo website in the [Terms & Conditions](https://confirmo.com/legal/terms-and-conditions) section.
 
+## Development
+
+The test suite runs against a real WordPress that it builds itself, so Docker is
+the only prerequisite:
+
+```bash
+tests/run.sh
+```
+
+The Confirmo Subscribe tests additionally need WooCommerce Subscriptions, a paid
+extension this repository does not carry; without it they skip and the Checkout
+tests still run. See [tests/README.md](tests/README.md) for supplying a copy and
+for the rest of the options.
+
 ## Support
 
 - Documentation: [Confirmo API reference](https://confirmo.com/docs/api-reference)

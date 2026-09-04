@@ -14,6 +14,9 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
  */
 class WC_Confirmo_Gateway extends WC_Payment_Gateway
 {
+    /** The Confirmo payment URL, kept on the order so admin, emails and the thank-you page can offer it. */
+    const REDIRECT_URL_META = '_confirmo_redirect_url';
+
     protected string $apiKey;
     protected ?string $settlementCurrency;
     protected string $callbackPassword;
@@ -55,9 +58,9 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $this->title = __("Confirmo", 'confirmo-for-woocommerce');
         $this->description = get_option('confirmo_gate_config_options')['description'];
         $this->enabled = $this->get_option('enabled');
-        $this->apiKey = get_option('confirmo_gate_config_options')['api_key'];
+        $this->apiKey = get_option('confirmo_gate_config_options')['api_key'] ?? '';
         $this->settlementCurrency = get_option('confirmo_gate_config_options')['settlement_currency'];
-        $this->callbackPassword = get_option('confirmo_gate_config_options')['callback_password'];
+        $this->callbackPassword = get_option('confirmo_gate_config_options')['callback_password'] ?? '';
         // If needed, other initializations can be done here.
     }
 
@@ -92,6 +95,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $this->loader->addAction('admin_notices', function () {
             settings_errors('confirmo_gate_config_config');
         });
+        $this->loader->addAction('admin_notices', [$this, 'callbackPasswordNotice']);
 
         $this->loader->addAction('template_redirect', [$this, 'handleNotification']);
         $this->loader->addAction('template_redirect', [$this, 'customPaymentTemplateRedirect']);
@@ -175,10 +179,12 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             echo '</table>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="confirmo_download_logs" value="1">';
+            wp_nonce_field('confirmo_download_logs');
             echo '<p><button type="submit" class="button button-primary">' . esc_html(__('Download Debug Logs', 'confirmo-for-woocommerce')) . '</button></p>';
             echo '</form>';
             echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
             echo '<input type="hidden" name="action" value="confirmo_delete_logs">';
+            wp_nonce_field('confirmo_delete_logs');
             echo '<p><button type="submit" class="button button-secondary">' . esc_html(__('Delete all logs', 'confirmo-for-woocommerce')) . '</button></p>';
             echo '</form>';
         } else {
@@ -201,7 +207,32 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         do_settings_sections('confirmo-payment-gate-config');
         submit_button(__('Save Settings', 'confirmo-for-woocommerce'));
         echo '</form>';
+        do_action('confirmo_subscribe_settings_page');
         echo '</div>';
+    }
+
+    /**
+     * Warns when an API key is configured but no callback password is set
+     *
+     * @return void
+     */
+    public function callbackPasswordNotice(): void
+    {
+        if ($this->apiKey === '' || $this->callbackPassword !== '') {
+            return;
+        }
+
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        printf(
+            '<div class="notice notice-error"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
+            esc_html__('Confirmo:', 'confirmo-for-woocommerce'),
+            esc_html__('no Callback Password is set, so Confirmo payment notifications are rejected and paid orders will stay pending.', 'confirmo-for-woocommerce'),
+            esc_url(admin_url('admin.php?page=confirmo-payment')),
+            esc_html__('Add your Callback Password', 'confirmo-for-woocommerce')
+        );
     }
 
     /**
@@ -296,6 +327,11 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $wpdb = $this->wpdb;
 
         if (isset($_POST['confirmo_download_logs'])) {
+            if (!current_user_can('manage_options')) {
+                wp_die(esc_html__('You do not have permission to download these logs.', 'confirmo-for-woocommerce'), '', ['response' => 403]);
+            }
+            check_admin_referer('confirmo_download_logs');
+
             $logs = $wpdb->get_results(
                 $wpdb->prepare(
                     "SELECT * FROM %i ORDER BY time ASC",
@@ -331,6 +367,11 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         $table_name = $this->wpdb->prefix . "confirmo_logs";
 
         if (isset($_POST['action']) && $_POST['action'] === 'confirmo_delete_logs') {
+            if (!current_user_can('manage_options')) {
+                wp_die(esc_html__('You do not have permission to delete these logs.', 'confirmo-for-woocommerce'), '', ['response' => 403]);
+            }
+            check_admin_referer('confirmo_delete_logs');
+
             $wpdb = $this->wpdb;
 
             $wpdb->query(
@@ -382,6 +423,28 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     }
 
     /**
+     * Reads the Confirmo payment URL through order CRUD, which resolves whichever
+     * order storage the store is using.
+     *
+     * Falls back to post meta for orders placed before this version by a store
+     * already on High-Performance Order Storage: those were written with
+     * update_post_meta(), so CRUD does not see them. Safe to drop once no such
+     * order can still be awaiting payment.
+     *
+     * @param $order
+     */
+    private function redirectUrlFor($order): string
+    {
+        if (!$order instanceof WC_Order) {
+            return '';
+        }
+
+        $url = (string) $order->get_meta(self::REDIRECT_URL_META);
+
+        return $url !== '' ? $url : (string) get_post_meta($order->get_id(), self::REDIRECT_URL_META, true);
+    }
+
+    /**
      * Adds invoice URL to edit order page to WC admin
      *
      * @param $order
@@ -389,7 +452,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
      */
     public function addUrlToEditOrder($order): void
     {
-        $confirmo_redirect_url = get_post_meta($order->get_id(), '_confirmo_redirect_url', true);
+        $confirmo_redirect_url = $this->redirectUrlFor($order);
 
         if ($confirmo_redirect_url) {
             echo '<p><strong>' . esc_html(__('Confirmo Payment URL:', 'confirmo-for-woocommerce')) . '</strong> <a href="' . esc_url($confirmo_redirect_url) . '" target="_blank">' . esc_url($confirmo_redirect_url) . '</a></p>';
@@ -408,7 +471,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     public function addUrlToEmails($order, $sent_to_admin, $plain_text, $email): void
     {
         if ($email->id == 'new_order' || $email->id == 'customer_on_hold_order') {
-            $confirmo_redirect_url = get_post_meta($order->get_id(), '_confirmo_redirect_url', true);
+            $confirmo_redirect_url = $this->redirectUrlFor($order);
 
             if ($confirmo_redirect_url) {
                 echo $plain_text ? esc_html(__('Confirmo Payment URL:', 'confirmo-for-woocommerce')) . esc_url($confirmo_redirect_url) . "\n" : "<p><strong>" . esc_html(__('Confirmo Payment URL:', 'confirmo-for-woocommerce')) . "</strong> <a href='" . esc_url($confirmo_redirect_url) . "'>" . esc_url($confirmo_redirect_url) . "</a></p>";
@@ -459,7 +522,16 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     }
 
     /**
-     * Compatibility with WooCommerce Blocks
+     * Compatibility with WooCommerce Blocks and High-Performance Order Storage.
+     *
+     * WooCommerce resolves the plugin from the file path given here, so it has to
+     * be the plugin's entry file — `__FILE__` names this include, which matches no
+     * installed plugin and left the declaration ignored.
+     *
+     * HPOS is declared because order data is read and written through order CRUD,
+     * which resolves whichever storage the store uses. It is default-on for new
+     * installs, and without the declaration WooCommerce lists the plugin as
+     * incompatible on every one of them.
      *
      * @return void
      */
@@ -467,8 +539,8 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     {
         // Check if the required class exists
         if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
-            // Declare compatibility for 'cart_checkout_blocks'
-            FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+            FeaturesUtil::declare_compatibility('cart_checkout_blocks', $this->pluginBaseDir, true);
+            FeaturesUtil::declare_compatibility('custom_order_tables', $this->pluginBaseDir, true);
         }
     }
 
@@ -531,7 +603,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
     {
         if (!$order) return $original_text;
 
-        $confirmo_redirect_url = get_post_meta($order->get_id(), '_confirmo_redirect_url', true);
+        $confirmo_redirect_url = $this->redirectUrlFor($order);
         $status = $order->get_status();
         $custom_text = '';
 
@@ -575,14 +647,15 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
             }
 
             // Validation callback password
-            if (!empty($this->callbackPassword)) {
-                $signature = hash('sha256', $json . $this->callbackPassword);
-                if (!isset($_SERVER['HTTP_BP_SIGNATURE']) || $_SERVER['HTTP_BP_SIGNATURE'] !== $signature) {
-                    $this->addDebugLog(null, "Confirmo: Signature validation failed!", 'handleNotification');
-                    wp_die('Invalid signature', '', ['response' => 403]);
-                }
-            } else {
-                $this->addDebugLog(null, "Confirmo: No callback password set, proceeding without validation.", 'handleNotification');
+            if ($this->callbackPassword === '') {
+                $this->addDebugLog(null, "Confirmo: No callback password set, callback rejected.", 'handleNotification');
+                wp_die('Callback password not configured', '', ['response' => 403]);
+            }
+
+            $signature = hash('sha256', $json . $this->callbackPassword);
+            if (!isset($_SERVER['HTTP_BP_SIGNATURE']) || !hash_equals($signature, (string) $_SERVER['HTTP_BP_SIGNATURE'])) {
+                $this->addDebugLog(null, "Confirmo: Signature validation failed!", 'handleNotification');
+                wp_die('Invalid signature', '', ['response' => 403]);
             }
 
             $data = json_decode($json, true);
@@ -708,7 +781,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         }
 
         $confirmo_redirect_url = $response_data['url'];
-        update_post_meta($order_id, '_confirmo_redirect_url', $confirmo_redirect_url);
+        $order->update_meta_data(self::REDIRECT_URL_META, $confirmo_redirect_url);
 
         // Change: Set initial order status to 'pending'
         $order->update_status('pending', __('Awaiting Confirmo payment.', 'confirmo-for-woocommerce'));

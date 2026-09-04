@@ -54,10 +54,17 @@ class WC_Confirmo_Activator
         $table_name = $wpdb->prefix . "confirmo_logs";
         $charset_collate = $wpdb->get_charset_collate();
 
+        // `order_id` is nullable because the entries worth having often precede
+        // an order, or belong to a request that never resolved to one: no
+        // callback password configured, a signature that did not match, a body
+        // that was not JSON. While it was NOT NULL those inserts were rejected
+        // outright, so the log was empty exactly when someone was working out
+        // why payments were not arriving. dbDelta applies the change on the
+        // version bump.
         $sql = "CREATE TABLE {$table_name} (
             `id` INT NOT NULL AUTO_INCREMENT,
             `time` TIMESTAMP NOT NULL,
-            `order_id` INT NOT NULL,
+            `order_id` INT NULL,
             `api_response` TEXT NOT NULL,
             `hook` VARCHAR(255) NOT NULL,
             `version` VARCHAR(10) NOT NULL,

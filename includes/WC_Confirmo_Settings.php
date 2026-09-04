@@ -13,21 +13,21 @@ class WC_Confirmo_Settings
 
         add_settings_section(
             'confirmo_gate_config_main',
-            __('Main Settings', 'confirmo-for-woocommerce'),
+            __('Confirmo Checkout — Main Settings', 'confirmo-for-woocommerce'),
             [self::class, 'configSectionCallback'],
             'confirmo-payment-gate-config'
         );
 
         add_settings_section(
             'confirmo_gate_config_advanced',
-            __('Advanced Settings', 'confirmo-for-woocommerce'),
+            __('Confirmo Checkout — Advanced Settings', 'confirmo-for-woocommerce'),
             [self::class, 'configAdvancedCallback'],
             'confirmo-payment-gate-config'
         );
 
         add_settings_field(
             'api_key',
-            __('API Key', 'confirmo-for-woocommerce'),
+            __('API Key (Checkout and Subscribe)', 'confirmo-for-woocommerce'),
             [self::class, 'configApiKeyCallback'],
             'confirmo-payment-gate-config',
             'confirmo_gate_config_main'
@@ -35,7 +35,7 @@ class WC_Confirmo_Settings
 
         add_settings_field(
             'callback_password',
-            __('Callback Password', 'confirmo-for-woocommerce'),
+            __('Callback Password (Checkout only)', 'confirmo-for-woocommerce'),
             [self::class, 'configCallbackPasswordCallback'],
             'confirmo-payment-gate-config',
             'confirmo_gate_config_main'
@@ -43,7 +43,7 @@ class WC_Confirmo_Settings
 
         add_settings_field(
             'settlement_currency',
-            __('Settlement Currency', 'confirmo-for-woocommerce'),
+            __('Settlement Currency (Checkout only)', 'confirmo-for-woocommerce'),
             [self::class, 'configSettlementCurrencyCallback'],
             'confirmo-payment-gate-config',
             'confirmo_gate_config_main'
@@ -155,6 +155,7 @@ class WC_Confirmo_Settings
     {
         $options = get_option('confirmo_gate_config_options');
         $value = isset($options['callback_password']) ? esc_attr($options['callback_password']) : '';
+        echo '<p style="font-size: 13px; margin-bottom: 10px;">' . esc_html__('Signs the callbacks Confirmo sends for Checkout payments. Applies to Confirmo Checkout only — Confirmo Subscribe webhooks are verified against Confirmo\'s published signing key and need nothing configured here.', 'confirmo-for-woocommerce') . '</p>';
         echo('<input type="text" id="callback_password" name="confirmo_gate_config_options[callback_password]" value="' . esc_attr($value) . '" required>');
     }
 
@@ -162,7 +163,7 @@ class WC_Confirmo_Settings
     {
         $options = get_option('confirmo_gate_config_options');
         $current_value = $options['settlement_currency'] ?? '';
-        echo '<p style="font-size: 13px; margin-bottom: 10px;">' . esc_html__('The currency in which funds will be credited and held in your account.', 'confirmo-for-woocommerce') . '</p>';
+        echo '<p style="font-size: 13px; margin-bottom: 10px;">' . esc_html__('The currency in which funds will be credited and held in your account. Applies to Confirmo Checkout payments only — settlement for Confirmo Subscribe is configured in the Confirmo merchant portal.', 'confirmo-for-woocommerce') . '</p>';
         echo '<select id="settlement_currency" name="confirmo_gate_config_options[settlement_currency]">';
         foreach (WC_Confirmo_Gateway::$allowedCurrencies as $key => $label) {
             $selected = ($label == $current_value) ? 'selected' : '';
@@ -256,15 +257,40 @@ class WC_Confirmo_Settings
             }
         }
 
-        if (isset($input['callback_password'])) {
-            $callback_password = sanitize_text_field($input['callback_password']);
+        $stored = get_option('confirmo_gate_config_options');
+        $stored_password = is_array($stored) ? (string) ($stored['callback_password'] ?? '') : '';
 
-            if (strlen($callback_password) == 16 && ctype_alnum($callback_password)) {
-                $new_input['callback_password'] = $callback_password;
-            } else {
-                $new_input['callback_password'] = $settings['callback_password'] ?? '';
-                add_settings_error('confirmo_gate_config_config', 'callback_password_error', __('Callback Password must be 16 alphanumeric characters', 'confirmo-for-woocommerce'), 'error');
+        $callback_password = isset($input['callback_password'])
+            ? trim(sanitize_text_field((string) $input['callback_password']))
+            : '';
+
+        if ($callback_password !== '') {
+            $new_input['callback_password'] = $callback_password;
+
+            // Saved either way — whatever Confirmo issues is what has to be
+            // stored, and rejecting an unfamiliar shape would lock a merchant out
+            // of their own settings if that shape ever changes. But a truncated
+            // paste is otherwise invisible until every callback is being refused,
+            // and the only trace is a log row, so say so now.
+            if (strlen($callback_password) !== 16 || !ctype_alnum($callback_password)) {
+                add_settings_error(
+                    'confirmo_gate_config_config',
+                    'callback_password_shape',
+                    __('Callback Password saved, but it does not look like the 16-character value Confirmo issues. If it was pasted incompletely, Confirmo payment notifications will be rejected and paid orders will stay pending.', 'confirmo-for-woocommerce'),
+                    'warning'
+                );
             }
+        } else {
+            $new_input['callback_password'] = $stored_password;
+
+            add_settings_error(
+                'confirmo_gate_config_config',
+                'callback_password_error',
+                $stored_password === ''
+                    ? __('Callback Password is required. Confirmo callbacks are rejected until one is saved.', 'confirmo-for-woocommerce')
+                    : __('Callback Password cannot be empty. Your previously saved password has been kept.', 'confirmo-for-woocommerce'),
+                'error'
+            );
         }
 
         if (isset($input['settlement_currency'])) {

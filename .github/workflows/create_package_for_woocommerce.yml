@@ -4,32 +4,78 @@ on:
   release:
     types:
       - published
+  # Lets the packaging be run against a release that already exists, so it can
+  # be proved before anyone is waiting on it.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag of an existing release to attach the package to
+        required: true
+
+permissions:
+  contents: write
 
 jobs:
   create-zip-package:
     name: Create and upload a custom zip package
     runs-on: ubuntu-latest
 
+    env:
+      TAG: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+
     steps:
       - name: Checkout the code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+
+      # A release once went out with the version left at the previous number,
+      # which makes it impossible to tell which merchants have updated. Cheaper
+      # to refuse to build than to find out afterwards.
+      - name: Check the version matches the release tag
+        run: |
+          expected="${TAG#v}"
+          header="$(sed -n 's/^\* *Version: *//p' confirmo-payment-gateway.php | head -1 | tr -d '\r')"
+          runtime="$(sed -n "s/^\$confirmo_version *= *'\(.*\)';/\1/p" confirmo-payment-gateway.php | head -1)"
+          stable="$(sed -n 's/^Stable tag: *//p' readme.txt | head -1 | tr -d '\r')"
+
+          echo "release tag:            $expected"
+          echo "plugin header Version:  $header"
+          echo "\$confirmo_version:      $runtime"
+          echo "readme.txt Stable tag:  $stable"
+
+          fail=0
+          for pair in "plugin header:$header" "\$confirmo_version:$runtime" "readme.txt Stable tag:$stable"; do
+            name="${pair%%:*}"
+            value="${pair#*:}"
+            if [ "$value" != "$expected" ]; then
+              echo "::error title=Version mismatch::$name says '$value' but the release is '$expected'"
+              fail=1
+            fi
+          done
+          exit "$fail"
 
       - name: Create a distribution directory
         run: |
           mkdir -p /tmp/pkg/confirmo-for-woocommerce
           cp -r ./* /tmp/pkg/confirmo-for-woocommerce/
+          # Development-only; merchants have no use for it in the plugin folder.
+          rm -rf /tmp/pkg/confirmo-for-woocommerce/tests \
+                 /tmp/pkg/confirmo-for-woocommerce/phpunit.xml.dist
 
       - name: Create a zip package
         run: |
           cd /tmp/pkg
           zip -r confirmo-for-woocommerce.zip confirmo-for-woocommerce
+          unzip -l confirmo-for-woocommerce.zip
 
+      # The gh CLI ships on the runner, so this needs no third-party action.
+      # --clobber lets the packaging be re-run against the same release.
       - name: Upload the asset
-        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: /tmp/pkg/confirmo-for-woocommerce.zip
-          asset_name: confirmo-for-woocommerce.zip
-          asset_content_type: application/zip
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "$TAG" \
+            /tmp/pkg/confirmo-for-woocommerce.zip \
+            --clobber \
+            --repo "$GITHUB_REPOSITORY"
