@@ -1,0 +1,74 @@
+# A throwaway WordPress for the test suite. Nothing here is shipped, and it is
+# deliberately separate from any other stack: its own project name, its own
+# volumes, and a port that does not collide with a development site.
+#
+# tests/env/up.sh builds it. `docker compose -p confirmo-tests down -v` removes
+# it completely.
+
+services:
+  db:
+    image: mariadb:11
+    container_name: confirmo-tests-db
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: wordpress
+      MARIADB_ROOT_PASSWORD: root
+    # InnoDB, because every test runs in a transaction that is rolled back.
+    command: --default-storage-engine=InnoDB
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  wordpress:
+    image: wordpress:php8.3-apache
+    container_name: confirmo-tests-wp
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      # An unroutable API host, so a request the suite failed to stub cannot
+      # reach the real Confirmo API even by accident.
+      WORDPRESS_CONFIG_EXTRA: |
+        define('CONFIRMO_API_URL', 'https://api.confirmo.test');
+      # WordPress' own notices would otherwise bury the suite's output; PHPUnit
+      # reports what actually failed.
+      WP_CLI_CACHE_DIR: /tmp/wp-cli-cache
+    ports:
+      - "${CONFIRMO_TESTS_PORT:-8089}:80"
+    volumes:
+      - html:/var/www/html
+
+  # WordPress' own wp-cli image, sharing the site volume. Provisioning runs
+  # through this rather than fetching the wp-cli phar into the web container, so
+  # building the environment pulls nothing from outside the official images.
+  cli:
+    image: wordpress:cli-php8.3
+    container_name: confirmo-tests-cli
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      # www-data has no home directory in this image.
+      WP_CLI_CACHE_DIR: /tmp/wp-cli-cache
+    volumes:
+      - html:/var/www/html
+    user: "33:33"
+    # Long-lived so `docker compose exec cli wp …` works; it does nothing itself.
+    entrypoint: ["tail", "-f", "/dev/null"]
+
+volumes:
+  db:
+  html:

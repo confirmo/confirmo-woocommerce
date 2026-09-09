@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    bootstrap="tests/bootstrap.php"
+    colors="true"
+    failOnWarning="true"
+    failOnRisky="true"
+    beStrictAboutTestsThatDoNotTestAnything="true"
+    convertDeprecationsToExceptions="false">
+    <testsuites>
+        <testsuite name="invoicing">
+            <directory>tests/Invoicing</directory>
+        </testsuite>
+        <testsuite name="subscribe">
+            <directory>tests/Subscribe</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

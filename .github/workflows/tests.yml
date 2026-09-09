@@ -1,0 +1,65 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  phpunit:
+    name: PHPUnit against WordPress and WooCommerce
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v7
+
+      # WooCommerce Subscriptions is a paid extension, so a runner cannot fetch
+      # it. confirmo/test-dependencies is a private repository holding the copy,
+      # read here with a deploy key that can read that one repository and
+      # nothing else. Without the secret this step is skipped, the Subscribe
+      # tests skip with it, and the Checkout tests still run.
+      # Guarded in the shell rather than with `if:` — the secrets context is not
+      # available to a step-level condition, and using it there makes the whole
+      # workflow fail to parse.
+      - name: Fetch WooCommerce Subscriptions
+        env:
+          KEY: ${{ secrets.WCS_VENDOR_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "No WCS_VENDOR_KEY — the Subscribe tests will skip."
+            exit 0
+          fi
+
+          mkdir -p ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/vendor
+          chmod 600 ~/.ssh/vendor
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+
+          GIT_SSH_COMMAND='ssh -i ~/.ssh/vendor -o IdentitiesOnly=yes' \
+            git clone --depth 1 -q git@github.com:confirmo/test-dependencies.git /tmp/test-dependencies
+
+          zip="$(ls /tmp/test-dependencies/woocommerce-subscriptions-*.zip | sort -V | tail -1)"
+          echo "WCS_ZIP=$zip" >> "$GITHUB_ENV"
+          echo "Using $(basename "$zip")"
+
+      - name: Build the test environment
+        run: tests/env/up.sh
+
+      - name: Run the suite
+        run: tests/run.sh
+
+      - name: Report what was skipped
+        if: always()
+        env:
+          KEY: ${{ secrets.WCS_VENDOR_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::warning title=Subscribe tests skipped::WooCommerce Subscriptions was not available, so only the Checkout tests ran. This happens on a fork, where secrets are withheld. See tests/README.md."
+          fi
+
+      - name: WordPress log, if the suite failed
+        if: failure()
+        run: docker logs confirmo-tests-wp 2>&1 | tail -100

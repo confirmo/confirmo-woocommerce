@@ -4,11 +4,12 @@ Accept cryptocurrency payments on your WooCommerce store with [Confirmo](https:/
 
 | | |
 | --- | --- |
-| **Stable version** | 2.9.0 |
+| **Stable version** | 2.10.0-alpha |
 | **Requires WordPress** | 6.2 or higher |
 | **Tested up to** | 6.7 |
 | **Requires PHP** | 7.4 or higher |
 | **Requires WooCommerce** | active and configured |
+| **Requires WooCommerce Subscriptions** | only for Confirmo Subscribe — see [below](#confirmo-subscribe-alpha) |
 | **License** | GNU General Public License — see [LICENSE](LICENSE) |
 
 > **Note:** This plugin is **not** distributed through the official WordPress.org plugin directory. It is available only from this repository's [**Releases**](https://github.com/confirmo/confirmo-woocommerce/releases) page and must be installed and updated **manually** using one of the methods below.
@@ -21,7 +22,7 @@ By accepting crypto payments you open your business to a new revenue stream. Des
 
 ## Download
 
-Download the latest `confirmo-woocommerce.zip` (or the source `.zip`) from the [**Releases**](https://github.com/confirmo/confirmo-woocommerce/releases) page. Always use the newest release to receive the latest features and security fixes.
+Download the latest `confirmo-for-woocommerce.zip` (or the source `.zip`) from the [**Releases**](https://github.com/confirmo/confirmo-woocommerce/releases) page. Always use the newest release to receive the latest features and security fixes.
 
 ## Installation
 
@@ -51,9 +52,9 @@ Because the plugin is not in the WordPress.org directory, updates are **not** de
 
 ## Configuration
 
-Create an account at [https://confirmo.com](https://confirmo.com), then:
+Create an account at [https://confirmo.com](https://confirmo.com), then sign in to your [**Confirmo dashboard**](https://dashboard.confirmo.com):
 
-1. **Generate an API key** — go to **Settings → API Keys → Create API key**. You will be asked to complete an e‑mail verification, after which you receive the API key.
+1. **Generate an API key** — in the [Confirmo dashboard](https://dashboard.confirmo.com), go to **Settings → API Keys → Create API key**. You will be asked to complete an e‑mail verification, after which you receive the API key.
 2. **Enable Confirmo in WooCommerce** — go to **WooCommerce → Settings → Payments**, enable **Confirmo** as a payment method, and paste the API key into the corresponding field.
 3. **Generate a callback password** — back in the Confirmo dashboard, go to **Settings → Callback password**. Complete a second e‑mail verification to receive the callback password, then paste it into the corresponding field in **WooCommerce → Settings → Payments**. Callback passwords increase the security of the API integration.
 4. **Choose your settlement currency**, then click **Save changes**.
@@ -63,6 +64,53 @@ Once activated, Confirmo appears as a payment option at your WooCommerce checkou
 > **Security:** Never share your API key or callback password with anyone.
 
 Read more at [Confirmo.com](https://confirmo.com). If you run into any difficulty, [contact us](mailto:support@confirmo.com) at [support@confirmo.com](mailto:support@confirmo.com).
+
+## Confirmo Subscribe (Alpha)
+
+> **Alpha:** Confirmo Subscribe is still in development and its behaviour may be adjusted in future releases.
+
+Confirmo Subscribe bills your customers on a recurring schedule. It is a **separate payment method** from the Confirmo Checkout gateway described above; both can run on the same store, and the module is off by default, so nothing changes for a Checkout‑only store until you turn it on.
+
+### Before you start
+
+Three things have to be in place, and none of them is optional:
+
+- **Plugin version 2.10.0-alpha or newer.** Confirmo Subscribe does not exist in earlier releases. Install or update from the [Releases](https://github.com/confirmo/confirmo-woocommerce/releases) page as described under [Installation](#installation) and [Updating](#updating).
+- **Confirmo has to switch subscriptions on for your account.** You cannot enable this yourself — a Confirmo administrator enables it for your merchant account in the Confirmo portal. Write to [support@confirmo.com](mailto:support@confirmo.com) to have it done, and wait for confirmation before configuring anything below.
+- **WooCommerce Subscriptions must be installed and active.** It is a paid extension you buy and install yourself from [woocommerce.com](https://woocommerce.com/products/woocommerce-subscriptions/) — Confirmo cannot supply it. This plugin builds on its subscription products and billing schedules, so without it the Subscribe module stays inert and says so in your dashboard.
+
+### 1. Create a plan in the Confirmo subscriptions portal
+
+Subscription plans live in the Confirmo subscriptions portal at [**dashboard.confirmo.com/v2**](https://dashboard.confirmo.com/v2/) — a separate section from the dashboard where you generated your API key. Create a plan there with:
+
+- a **billing currency** and **no fixed price** — a variable‑price plan, where each WooCommerce product supplies its own amount;
+- the **billing interval** you want to charge on, for example monthly;
+- a **grace period** — how long a failed payment keeps being retried before the subscription stops.
+
+The plan's currency must match your WooCommerce store currency, or order totals would be recorded in one currency for charges made in another. Fixed‑price plans are not sold by this plugin: a product mapped to one is refused at checkout.
+
+> **Settlement currency** for Subscribe is configured in the [Confirmo subscriptions portal](https://dashboard.confirmo.com/v2/), not in WooCommerce. The Settlement Currency field in the plugin's settings applies to Confirmo Checkout only.
+
+### 2. Enable the module in WordPress
+
+Two switches, both off by default. You need both:
+
+1. Go to **Confirmo Payment → Settings**, tick **Enable the Subscribe module**, and save. This loads the subscription gateway.
+2. Go to **WooCommerce → Settings → Payments** and enable **Confirmo Subscribe** to offer it to subscribers.
+
+> Switching the module off later does **not** cancel anything. Confirmo carries on billing existing subscriptions, and while the module is off your store will neither record those payments nor pass on a cancellation — cancel them in Confirmo first.
+
+### 3. Create the product and link the plan
+
+1. Add a product and set its **product type** to **Simple subscription** (a type provided by WooCommerce Subscriptions).
+2. Set the product's **price**. This is the amount Confirmo charges every cycle.
+3. On the **General** tab, choose your plan from the **Confirmo Subscribe plan** dropdown, then publish.
+
+The billing interval comes from the Confirmo plan, so WooCommerce's own interval fields are locked to match it — the product owns the price, and the order total at checkout is what Confirmo bills each cycle. If the dropdown reports that no plans were found, check that step 1 produced a variable‑price plan and that your API key is correct.
+
+> Your store must show prices to **no more than 2 decimal places** (**WooCommerce → Settings → General**). Confirmo cannot represent more, and checkout is refused for a total it cannot express.
+
+Customers now see **Confirmo Subscribe** at checkout for that product. Cancelling in Confirmo cancels the subscription in WooCommerce, and cancelling in WooCommerce is passed on to Confirmo.
 
 ## Frequently Asked Questions
 
@@ -104,6 +152,20 @@ Settlements (recurrent withdrawals) are free, but bank fees apply.
 ### Where can I find the Terms & Conditions?
 
 The most up‑to‑date Terms & Conditions are available on the Confirmo website in the [Terms & Conditions](https://confirmo.com/legal/terms-and-conditions) section.
+
+## Development
+
+The test suite runs against a real WordPress that it builds itself, so Docker is
+the only prerequisite:
+
+```bash
+tests/run.sh
+```
+
+The Confirmo Subscribe tests additionally need WooCommerce Subscriptions, a paid
+extension this repository does not carry; without it they skip and the Checkout
+tests still run. See [tests/README.md](tests/README.md) for supplying a copy and
+for the rest of the options.
 
 ## Support
 
