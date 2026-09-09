@@ -4,7 +4,7 @@ Accept cryptocurrency payments on your WooCommerce store with [Confirmo](https:/
 
 | | |
 | --- | --- |
-| **Stable version** | 2.10.0 |
+| **Stable version** | 2.10.0-alpha |
 | **Requires WordPress** | 6.2 or higher |
 | **Tested up to** | 6.7 |
 | **Requires PHP** | 7.4 or higher |
@@ -75,7 +75,7 @@ Confirmo Subscribe bills your customers on a recurring schedule. It is a **separ
 
 Three things have to be in place, and none of them is optional:
 
-- **Plugin version 2.10.0 or newer.** Confirmo Subscribe does not exist in earlier releases. Install or update from the [Releases](https://github.com/confirmo/confirmo-woocommerce/releases) page as described under [Installation](#installation) and [Updating](#updating).
+- **Plugin version 2.10.0-alpha or newer.** Confirmo Subscribe does not exist in earlier releases. Install or update from the [Releases](https://github.com/confirmo/confirmo-woocommerce/releases) page as described under [Installation](#installation) and [Updating](#updating).
 - **Confirmo has to switch subscriptions on for your account.** You cannot enable this yourself — a Confirmo administrator enables it for your merchant account in the Confirmo portal. Write to [support@confirmo.com](mailto:support@confirmo.com) to have it done, and wait for confirmation before configuring anything below.
 - **WooCommerce Subscriptions must be installed and active.** It is a paid extension you buy and install yourself from [woocommerce.com](https://woocommerce.com/products/woocommerce-subscriptions/) — Confirmo cannot supply it. This plugin builds on its subscription products and billing schedules, so without it the Subscribe module stays inert and says so in your dashboard.
 

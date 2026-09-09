@@ -4,7 +4,7 @@ Contributors: confirmoadm
 Tags: Confirmo, Cryptocurrency, Crypto, Crypto Payments, Payment Gateway
 Requires at least: 6.2
 Tested up to: 6.7
-Stable tag: 2.10.0
+Stable tag: 2.10.0-alpha
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -17,7 +17,7 @@ Start accepting cryptocurrency payments with Confirmo, one of the fastest growin
 
 By accepting crypto payments you open your business to a new revenue stream. Despite being commonly viewed as an investment tool, cryptocurrencies were created as an alternative to centralized, inflationary financial systems, and crypto holders are now looking for businesses which accept their funds. Using Confirmo's WooCommerce plugin is a simple way to do so. Installing it is quick and easy, so choose your preferred method below.
 
-From version 2.10.0 the plugin also carries Confirmo Subscribe, an optional module for billing customers on a recurring schedule through WooCommerce Subscriptions. It is a separate payment method from the one-off Confirmo Checkout gateway, it is off by default, and it requires subscriptions to be enabled for your Confirmo account. See Setting up Confirmo Subscribe in the Installation section.
+From version 2.10.0-alpha the plugin also carries Confirmo Subscribe, an optional module for billing customers on a recurring schedule through WooCommerce Subscriptions. It is a separate payment method from the one-off Confirmo Checkout gateway, it is off by default, and it requires subscriptions to be enabled for your Confirmo account. See Setting up Confirmo Subscribe in the Installation section.
 
 Note: This plugin is not distributed through the official WordPress.org plugin directory. It is available only from the GitHub Releases page (https://github.com/confirmo/confirmo-woocommerce/releases) and must be installed and updated manually.
 
@@ -61,7 +61,7 @@ Confirmo Subscribe bills your customers on a recurring schedule. It is a separat
 
 Three things must be in place before you start, and none of them is optional:
 
-1. Plugin version 2.10.0 or newer. Confirmo Subscribe does not exist in earlier releases.
+1. Plugin version 2.10.0-alpha or newer. Confirmo Subscribe does not exist in earlier releases.
 2. Subscriptions enabled for your Confirmo account. You cannot enable this yourself - a Confirmo administrator enables it for your merchant account in the Confirmo portal. Write to support@confirmo.com to have it done, and wait for confirmation before configuring anything below.
 3. WooCommerce Subscriptions, installed and active. It is a paid extension you buy and install yourself from https://woocommerce.com/products/woocommerce-subscriptions/ - Confirmo cannot supply it. This plugin builds on its subscription products and billing schedules, so without it the Subscribe module stays inert and says so in your dashboard.
 
@@ -131,7 +131,7 @@ Settlements (recurrent withdrawals) are free, but bank fees apply.
 
 = Can I sell subscriptions with Confirmo? =
 
-Yes, using the Confirmo Subscribe module added in version 2.10.0. It needs two things beyond the plugin itself: subscriptions enabled for your Confirmo account, which a Confirmo administrator does for you in the Confirmo portal, and the paid WooCommerce Subscriptions extension. See Setting up Confirmo Subscribe in the Installation section for the full walkthrough.
+Yes, using the Confirmo Subscribe module added in version 2.10.0-alpha. It needs two things beyond the plugin itself: subscriptions enabled for your Confirmo account, which a Confirmo administrator does for you in the Confirmo portal, and the paid WooCommerce Subscriptions extension. See Setting up Confirmo Subscribe in the Installation section for the full walkthrough.
 
 = Do I need WooCommerce Subscriptions for Confirmo Subscribe? =
 
@@ -143,7 +143,7 @@ The most up-to-date Terms & Conditions are available on the Confirmo website in 
 
 == Changelog ==
 
-= 2.10.0 =
+= 2.10.0-alpha =
 * Adds Confirmo Subscribe, an optional module for selling recurring plans through WooCommerce Subscriptions. Off by default; the Confirmo Checkout gateway is unaffected.
 * Declares support for WooCommerce's High-Performance Order Storage.
 
@@ -152,5 +152,5 @@ The most up-to-date Terms & Conditions are available on the Confirmo website in 
 
 == Upgrade Notice ==
 
-= 2.10.0 =
+= 2.10.0-alpha =
 Download the latest release from https://github.com/confirmo/confirmo-woocommerce/releases and upload it via Plugins - Add New - Upload Plugin. Settings are preserved. Confirmo Subscribe stays off until you enable it in Confirmo Payment settings.
