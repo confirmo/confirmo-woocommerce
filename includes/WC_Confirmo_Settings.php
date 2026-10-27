@@ -98,7 +98,7 @@ class WC_Confirmo_Settings
                 'status' => 'Active',
                 'desc' => 'The invoice is generated with payment instructions, including details such as the crypto address, asset, network, amount, and currency. By default, the invoice remains active for 15 minutes, but this duration can be adjusted in the Invoice Settings.',
                 'next_label' => 'Next states:',
-                'next_value' => 'Expired, Confirming'
+                'next_value' => 'Expired, Confirming, Blocked'
             ],
             [
                 'status' => 'Expired',
@@ -110,13 +110,19 @@ class WC_Confirmo_Settings
                 'status' => 'Confirming',
                 'desc' => 'Payment has been detected, and the amount is correct or higher, but it is still awaiting sufficient confirmations on the crypto network.',
                 'next_label' => 'Next states:',
-                'next_value' => 'Error, Paid, Pending Verification'
+                'next_value' => 'Error, Paid, Pending Verification, Blocked'
             ],
             [
                 'status' => 'Pending Verification',
                 'desc' => 'Client needs to provide additional info to satisfy regulatory requirements.',
                 'next_label' => 'Next states:',
-                'next_value' => 'Expired, Paid'
+                'next_value' => 'Expired, Paid, Blocked'
+            ],
+            [
+                'status' => 'Blocked',
+                'desc' => 'Confirmo blocked the payment for compliance reasons after screening it. The order must not be fulfilled. Contact Confirmo support for details.',
+                'next_label' => 'Final state',
+                'next_value' => ''
             ],
             [
                 'status' => 'Error',
@@ -182,16 +188,7 @@ class WC_Confirmo_Settings
 
     public static function configCustomStatusesCallback(): void
     {
-        $options = get_option('confirmo_gate_config_options');
-        $values = $options['custom_states'] ?? [
-            'prepared' => 'on-hold',
-            'active' => 'on-hold',
-            'confirming' => 'on-hold',
-            'pending_verification' => 'on-hold',
-            'paid' => 'completed',
-            'expired' => 'failed',
-            'error' => 'failed',
-        ];
+        $values = WC_Confirmo_Gateway::customStates();
 
         echo '<table class="" style="width: auto;margin-top: -20px;margin-left: -220px;background: white;padding: 0 20px;border-radius: 4px;border: 1px solid #8c8f94;">';
         echo '<tr><th>Confirmo status</th><th>WooCommerce status</th></tr>';
