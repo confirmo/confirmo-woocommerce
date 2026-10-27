@@ -43,10 +43,35 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
         'prepared' => 'Prepared',
         'active' => 'Active',
         'confirming' => 'Confirming',
+        'pending_verification' => 'Pending Verification',
         'paid' => 'Paid',
         'expired' => 'Expired',
-        'error' => 'Error'
+        'error' => 'Error',
+        'blocked' => 'Blocked'
     ];
+    public static array $defaultCustomStates = [
+        'prepared' => 'on-hold',
+        'active' => 'on-hold',
+        'confirming' => 'on-hold',
+        'pending_verification' => 'on-hold',
+        'paid' => 'completed',
+        'expired' => 'failed',
+        'error' => 'failed',
+        'blocked' => 'failed',
+    ];
+
+    /**
+     * Saved status mapping completed with defaults. Stores keep the mapping saved by the version they
+     * activated with, so a status added later has no saved entry until the merchant saves the settings.
+     *
+     * @return array
+     */
+    public static function customStates(): array
+    {
+        $options = get_option('confirmo_gate_config_options');
+
+        return array_merge(self::$defaultCustomStates, $options['custom_states'] ?? []);
+    }
 
     public function __construct()
     {
@@ -923,8 +948,7 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
      */
     private function updateOrderStatus($order, string $confirmo_status): void
     {
-        $options = get_option('confirmo_gate_config_options');
-        $values = $options['custom_states'];
+        $values = self::customStates();
 
         switch ($confirmo_status) {
             case 'prepared':
@@ -947,6 +971,9 @@ class WC_Confirmo_Gateway extends WC_Payment_Gateway
                 break;
             case 'error':
                 $message = __('Payment confirmation failed', 'confirmo-for-woocommerce');
+                break;
+            case 'blocked':
+                $message = __('Payment blocked by Confirmo for compliance reasons. Contact Confirmo support for details.', 'confirmo-for-woocommerce');
                 break;
             default:
                 $this->addDebugLog($order->get_id(), "Received unknown status: " . $confirmo_status, 'order_status_update');
