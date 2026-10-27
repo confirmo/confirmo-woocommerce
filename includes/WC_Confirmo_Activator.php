@@ -31,6 +31,7 @@ class WC_Confirmo_Activator
                 'paid' => 'completed',
                 'expired' => 'failed',
                 'error' => 'failed',
+                'blocked' => 'failed',
             ]
         ];
 
