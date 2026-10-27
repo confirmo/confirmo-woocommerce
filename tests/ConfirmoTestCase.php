@@ -71,9 +71,8 @@ abstract class ConfirmoTestCase extends TestCase
             'callback_password' => 'abcdefghij123456',
             'settlement_currency' => 'USDT',
             'description' => 'Pay with crypto',
-            // The mapping WC_Confirmo_Activator installs. updateOrderStatus reads
-            // these keys directly, so a test with an empty mapping would only ever
-            // exercise a broken store.
+            // The mapping WC_Confirmo_Activator installs. Statuses missing from a
+            // saved mapping fall back to defaults; StatusMappingTest covers that.
             'custom_states' => [
                 'prepared' => 'on-hold',
                 'active' => 'on-hold',
@@ -82,6 +81,7 @@ abstract class ConfirmoTestCase extends TestCase
                 'paid' => 'completed',
                 'expired' => 'failed',
                 'error' => 'failed',
+                'blocked' => 'failed',
             ],
         ]);
         update_option('confirmo_subscribe_config_options', ['enabled' => 'yes']);

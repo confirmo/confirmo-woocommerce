@@ -35,7 +35,7 @@ if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
 fi
 
 if ! docker exec "$CONTAINER" test -f "$PHAR_IN_CONTAINER"; then
-    echo "Fetching PHPUnit ${PHPUNIT_VERSION} into $CONTAINER…"
+    echo "Fetching PHPUnit ${PHPUNIT_VERSION} into ${CONTAINER}…"
     docker exec "$CONTAINER" sh -c \
         "curl -sSL -o $PHAR_IN_CONTAINER https://phar.phpunit.de/phpunit-${PHPUNIT_VERSION}.phar" \
         || { echo "Could not download PHPUnit into the container." >&2; exit 1; }

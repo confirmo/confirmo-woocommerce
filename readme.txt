@@ -147,6 +147,10 @@ The most up-to-date Terms & Conditions are available on the Confirmo website in 
 * Adds Confirmo Subscribe, an optional module for selling recurring plans through WooCommerce Subscriptions. Off by default; the Confirmo Checkout gateway is unaffected.
 * Declares support for WooCommerce's High-Performance Order Storage.
 
+= 2.9.1 =
+* Payments Confirmo blocks for compliance reasons (invoice status `blocked`) now move the order to Failed with an explanatory note, instead of leaving it On Hold.
+* Pending Verification and Blocked are now listed in the order-status mapping settings, and a status missing from a store's saved mapping falls back to its default.
+
 = 2.9.0 =
 * See the full release notes at https://github.com/confirmo/confirmo-woocommerce/releases
 
